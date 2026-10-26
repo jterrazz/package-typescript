@@ -61,13 +61,13 @@ describe('typescript', () => {
 
              DRIFT  Deviations from the profile
 
-              declared                              api on node
-              exceptions                            0
-              rules off vs profile                  none
-              suppressions                          0
-              .jterrazz/oxlint-suppressions.json    nothing held
-              .jterrazz/baseline.json › typescript  nothing held
-              tool versions                         in range
+              declared                            api on node
+              exceptions                          0
+              rules off vs profile                none
+              suppressions                        0
+              .studio/oxlint-suppressions.json    nothing held
+              .studio/baseline.json › typescript  nothing held
+              tool versions                       in range
 
              END  Finalizing quality checks
 

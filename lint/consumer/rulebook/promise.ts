@@ -30,7 +30,7 @@ export default fragment({
         ),
         'promise/prefer-await-to-callbacks': off(
             {
-                by: "the vision-17 pilots, 2026-10-06: every report a callback a framework's signature dictates, not one an API the estate wrote: Hono's `onError` (jterrazz-os console), commander's exit hook (jterrazz-os cli), OpenTelemetry's observable callback (package-telemetry, renamed to dodge the rule); it reads a first parameter named `error` and a parameter named `callback`, never whether an awaitable form exists",
+                by: "the vision-17 pilots, 2026-10-06: every report a callback a framework's signature dictates, not one an API the estate wrote: Hono's `onError` (studio-os console), commander's exit hook (studio-os cli), OpenTelemetry's observable callback (package-telemetry, renamed to dodge the rule); it reads a first parameter named `error` and a parameter named `callback`, never whether an awaitable form exists",
                 kind: 'evidence',
             },
             '11.0.0',

@@ -98,7 +98,7 @@ if (scenario === 'gated') {
     mkdirSync(join(root, '.artifacts'), { recursive: true });
     writeFileSync(join(root, '.artifacts/gate.lock'), String(process.pid));
 } else if (scenario === 'unresolved') {
-    writeFileSync(join(root, 'jterrazz.config.ts'), 'export default 42;\n');
+    writeFileSync(join(root, 'studio.config.ts'), 'export default 42;\n');
 }
 process.exitCode = scenario === 'fresh' ? freshlyBuilt() : refused();
 rmSync(root, { force: true, recursive: true });

@@ -21,7 +21,7 @@ beside both.
 
 ## Decision
 
-- `jterrazz.config.ts` declares the project in two closed unions: `kind`
+- `studio.config.ts` declares the project in two closed unions: `kind`
   (`library`, `api`, `cli`, `website`, `mobile`, `workspace`) and
   `platform` (`node`, `bun`, `react`, `next`, `astro`, `expo`), with the
   platforms each kind may run on typed. The base preset, the lint profile,
@@ -31,7 +31,7 @@ beside both.
   `oxlint.config.ts` and `oxfmt.config.ts` hand their own
   `import.meta.url` to the `oxlintConfig` and `oxfmtConfig` of the
   `./oxlint` and `./oxfmt` entries, which derive the config from the
-  `jterrazz.config.ts` of the module's directory. They hand the `url`, since a
+  `studio.config.ts` of the module's directory. They hand the `url`, since a
   browser platform's types declare no `dirname`, and jiti, which knip
   loads configs with, rewrites `import.meta.url` to the file's own but
   hands the bare `import.meta` over as its wrapper's. The Config (one
@@ -56,7 +56,7 @@ beside both.
   server resolves the `extends`, and the Vitest extension loads its config
   from the config's own directory.
 - The oxlint language server watches its own config names, never
-  `jterrazz.config.ts`, so an edit of the declaration reaches it when it
+  `studio.config.ts`, so an edit of the declaration reaches it when it
   reloads, on a save of `oxlint.config.ts` or a restart. The reader
   imports the declaration afresh whenever its mtime changes, since Node
   would hand a reload the first import; a rule that reads settings while
@@ -67,7 +67,7 @@ beside both.
   project. knip skips a config that only re-exports from a package, which
   the forms above never do.
 - A tool only the command runs keeps no config: the command derives knip's,
-  tsdown's and Stryker's from the manifest and `jterrazz.config.ts`, where
+  tsdown's and Stryker's from the manifest and `studio.config.ts`, where
   every setting maps to its reason (`typescript.knip`, `typescript.build`,
   `typescript.mutation`, `typescript.oxlint`, `typescript.oxfmt`). `build`
   reads its entries off the manifest and builds a `.cjs` target as well;
@@ -76,9 +76,9 @@ beside both.
   member's own derived config to the member's folder, and a member keeps no
   `oxlint.config.ts` or `oxfmt.config.ts` of its own.
 - Everything regenerable lives under `.artifacts/`; the debt the ratchet
-  holds lives under `.jterrazz/`, tracked, and goes when it is paid. oxlint
+  holds lives under `.studio/`, tracked, and goes when it is paid. oxlint
   takes no path for its suppressions file, so the command stages
-  `.jterrazz/oxlint-suppressions.json` at the root for the length of a run.
+  `.studio/oxlint-suppressions.json` at the root for the length of a run.
 
 ## Consequences
 

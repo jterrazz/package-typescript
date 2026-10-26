@@ -4,7 +4,7 @@ From an empty folder to a green `typescript check`: one install, one declaration
 
 ## Before you start
 
-- **Node 24 or later.** Node loads `jterrazz.config.ts` itself, stripping its types, which needs no flag from Node 24 on; the package declares it in `engines`.
+- **Node 24 or later.** Node loads `studio.config.ts` itself, stripping its types, which needs no flag from Node 24 on; the package declares it in `engines`.
 - **npm, pnpm or bun.** The package holds under each of them. The examples below are npm's; under pnpm, `npx typescript ...` is `pnpm exec typescript ...` and `npm ci` is `pnpm install --frozen-lockfile`, and under bun they are `bunx typescript ...` and `bun install --frozen-lockfile`. One check is narrower off npm: `typescript doctor` reads `package-lock.json` and `bun.lock` to pin the browser provider to vitest, and says so rather than parsing a `pnpm-lock.yaml` or a `bun.lockb` ([The provider pinned to its runner](../guides/adopt-a-stricter-release.md#the-provider-pinned-to-its-runner)).
 - **A git repository.** `git init` before the first run. Every gate reads the files git does not ignore, and the manual and the `Makefile` are asked for only at a repository root, a `.git` beside the project. Outside one, the gates walk the disk and those two are never asked.
 
@@ -16,10 +16,10 @@ tsc, oxlint, oxfmt, knip, tsdown and Stryker are the package's own dependencies 
 
 ## 1. Declare what the project is
 
-A project says two things about itself, in `jterrazz.config.ts`, and every law, check and editor file follows from them: its **kind**, what it is, and its **platform**, what it runs on.
+A project says two things about itself, in `studio.config.ts`, and every law, check and editor file follows from them: its **kind**, what it is, and its **platform**, what it runs on.
 
 ```ts
-// jterrazz.config.ts
+// studio.config.ts
 import { defineConfig } from '@jterrazz/typescript/config';
 
 export default defineConfig({ kind: 'api', platform: 'node' });
@@ -65,7 +65,7 @@ export default await oxfmtConfig(import.meta.url);
 { "extends": "@jterrazz/typescript/tsconfig/node" }
 ```
 
-The `tsconfig.json` names the preset of the platform (`node` for `bun`, the platform's own for the others), and the root of a monorepo keeps none, its members each keeping theirs. `typescript fix` writes all three, and `check` refuses one that says anything else (`config/editor-file-derived`): the content is the toolchain's, so a project changes its lint rules, its format or its build through `jterrazz.config.ts`, where every setting carries its reason ([Configuration](../reference/configuration.md)). Each config passes its own directory, so the `jterrazz.config.ts` beside it is the one read wherever the tool starts, a terminal in `src/` included. An editor is opened on the project itself, since oxlint refuses a type-aware config it finds nested below the folder it starts in ([Quality checks § The derived files](../reference/quality-checks.md#the-derived-files)).
+The `tsconfig.json` names the preset of the platform (`node` for `bun`, the platform's own for the others), and the root of a monorepo keeps none, its members each keeping theirs. `typescript fix` writes all three, and `check` refuses one that says anything else (`config/editor-file-derived`): the content is the toolchain's, so a project changes its lint rules, its format or its build through `studio.config.ts`, where every setting carries its reason ([Configuration](../reference/configuration.md)). Each config passes its own directory, so the `studio.config.ts` beside it is the one read wherever the tool starts, a terminal in `src/` included. An editor is opened on the project itself, since oxlint refuses a type-aware config it finds nested below the folder it starts in ([Quality checks § The derived files](../reference/quality-checks.md#the-derived-files)).
 
 No other tool config belongs at the root: knip, the build and mutation testing are configured by the command that runs them, from the same file, and a `knip.json`, a `tsdown.config.ts` or a `stryker.config.json` is refused (`config/no-tool-config`).
 
@@ -172,8 +172,8 @@ A repository that ships (a `package.json` not marked `"private": true`, such as 
   declared                              api on node
   rules off vs profile                  none
   suppressions                          0
-  .jterrazz/oxlint-suppressions.json    nothing held
-  .jterrazz/baseline.json › typescript  nothing held
+  .studio/oxlint-suppressions.json    nothing held
+  .studio/baseline.json › typescript  nothing held
   tool versions                         in range
 
 ✓ All checks passed
@@ -199,9 +199,9 @@ That is the whole contract, and it is meant to stay that size:
 
 - **One devDependency**, `@jterrazz/typescript`.
 - **Two commands**, `typescript check` and `typescript fix`. Every gate sits behind them, so a script calling a tool underneath skips the passes the command orchestrates.
-- **One file of settings**, `jterrazz.config.ts`: the kind, the platform, the presets, and every setting with its reason.
+- **One file of settings**, `studio.config.ts`: the kind, the platform, the presets, and every setting with its reason.
 - **Three derived files**, `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json`, each written by `fix` and refused by `check` when it says anything else. In a monorepo the `tsconfig.json` is one per member: the toolchain measures from the package, not the repository.
-- **Two tracked ledgers at most**, under `.jterrazz/`: the debt the ratchet holds, gone when it is paid ([the ratchet](../reference/quality-checks.md#the-ratchet)).
+- **Two tracked ledgers at most**, under `.studio/`: the debt the ratchet holds, gone when it is paid ([the ratchet](../reference/quality-checks.md#the-ratchet)).
 - **Six gestures**, the `Makefile` above, and **a manual**, `CLAUDE.md` and `docs/`: both required at a repository root.
 
 A local `compilerOption` is written under `typescript.tsconfig`, with its reason, and lands in the derived `tsconfig.json`; it is still a smell rather than a shortcut. It says the preset lacks something, and settles that lack for one project where nobody else reads it, so the next project meets the same gap and answers it differently. Change the preset instead, where every project gets the answer.
@@ -226,14 +226,14 @@ Open the editor on the project folder, a workspace on its root, never on a folde
 
 - **Lint and format.** An Oxc integration (the Oxc extension in VS Code and its forks) runs `oxlint --lsp` and `oxfmt --lsp`; point it at the project's own `node_modules/.bin/oxlint` and `oxfmt`, so the editor runs the versions `check` runs. The type-aware rules need nothing more: oxlint finds `tsgolint` in the same `node_modules/.bin`. Turn off any ESLint or Prettier integration for the project, which would judge it by another rulebook.
 - **Types.** `check` type-checks with the TypeScript 7 compiler this package installs, the platform package of `@typescript/native` at `node_modules/@typescript/typescript-<os>-<arch>/lib/tsc` (under `node_modules/@typescript/native/` where another version holds that place), whose language server is `tsc --lsp --stdio`. Point the editor's TypeScript at it. `node_modules/typescript` is TypeScript 6, kept for two tools that read its JavaScript API ([Architecture](../concepts/architecture.md#two-typescript-compilers-on-purpose)); an editor told to use the workspace version picks that one, and can then disagree with `check`, which stays the verdict.
-- **After an edit of `jterrazz.config.ts`**, save `oxlint.config.ts` or restart the oxlint server: it watches its own config, not the declaration.
+- **After an edit of `studio.config.ts`**, save `oxlint.config.ts` or restart the oxlint server: it watches its own config, not the declaration.
 
 ## In a monorepo
 
-A repository is a monorepo when its root `package.json` lists `workspaces`. npm owns that fact, and nothing declares it again. The root is a container, never a project: its manifest is `"private": true`, and it declares no kind and no platform. Each member declares its own beside its `package.json`. The root's `jterrazz.config.ts`, when it has one, holds the repository's settings alone (its roots, its oxfmt and oxlint ignores and overrides, its knip entries, its presets), and a root with none of those keeps no file:
+A repository is a monorepo when its root `package.json` lists `workspaces`. npm owns that fact, and nothing declares it again. The root is a container, never a project: its manifest is `"private": true`, and it declares no kind and no platform. Each member declares its own beside its `package.json`. The root's `studio.config.ts`, when it has one, holds the repository's settings alone (its roots, its oxfmt and oxlint ignores and overrides, its knip entries, its presets), and a root with none of those keeps no file:
 
 ```ts
-// jterrazz.config.ts, at the root, only when the repository has settings of its own
+// studio.config.ts, at the root, only when the repository has settings of its own
 import { defineConfig } from '@jterrazz/typescript/config';
 
 export default defineConfig({
@@ -242,7 +242,7 @@ export default defineConfig({
 ```
 
 ```ts
-// packages/greeting/jterrazz.config.ts
+// packages/greeting/studio.config.ts
 import { defineConfig } from '@jterrazz/typescript/config';
 
 export default defineConfig({ kind: 'library', platform: 'node' });
@@ -250,15 +250,15 @@ export default defineConfig({ kind: 'library', platform: 'node' });
 
 ```text
 package.json            # "private": true, "workspaces": ["packages/*"]
-jterrazz.config.ts      # the repository's settings, no kind (or no file at all)
+studio.config.ts      # the repository's settings, no kind (or no file at all)
 oxlint.config.ts        # derived; lints each member by its own declaration
 oxfmt.config.ts         # derived
 Makefile                # the six gestures, once for the repository
 CLAUDE.md, docs/        # the manual, once for the repository
-.jterrazz/              # the ledgers, where check runs
+.studio/              # the ledgers, where check runs
 packages/greeting/
   package.json
-  jterrazz.config.ts    # { kind: 'library', platform: 'node' }
+  studio.config.ts    # { kind: 'library', platform: 'node' }
   tsconfig.json         # derived from the member's platform
   src/
 ```
@@ -267,10 +267,10 @@ A kind at the root, or a root npm would publish, is refused by `config/kind-matc
 
 ## A repository with no code
 
-A repository with no code of the toolchain's (YAML, Markdown, an infrastructure, a vault of articles, an application in another language) declares itself in a `jterrazz.config.ts` and keeps no `package.json`:
+A repository with no code of the toolchain's (YAML, Markdown, an infrastructure, a vault of articles, an application in another language) declares itself in a `studio.config.ts` and keeps no `package.json`:
 
 ```ts
-// jterrazz.config.ts
+// studio.config.ts
 export default { kind: 'content' };
 ```
 

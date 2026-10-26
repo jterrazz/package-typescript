@@ -27,7 +27,7 @@ function projectHolding(ledger: null | string): string {
     const root = mkdtempSync(join(tmpdir(), 'staged-suppressions-'));
     roots.push(root);
     if (ledger !== null) {
-        mkdirSync(join(root, '.jterrazz'));
+        mkdirSync(join(root, '.studio'));
         writeFileSync(join(root, SUPPRESSIONS_LEDGER), ledger);
     }
 

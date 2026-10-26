@@ -64,7 +64,7 @@ describe('browser-builds', () => {
 
             found: the machine lacks chromium-headless-shell r1201, which the Playwright this project resolves launches · why: a browser project fails at launch on a revision the machine does not hold, and several Playwright revisions on one machine each need their own build · fix: run \`npx playwright install chromium\` in the project, then \`typescript doctor\` again · read: docs/guides/adopt-a-stricter-release.md#the-browser-build-on-the-machine
 
-            Resolved jterrazz.config.ts
+            Resolved studio.config.ts
 
             {{any}}
         `);
@@ -85,7 +85,7 @@ describe('browser-builds', () => {
               chromium-headless-shell     r1201      installed
 
 
-            Resolved jterrazz.config.ts
+            Resolved studio.config.ts
 
             {{any}}
         `);

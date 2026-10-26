@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 
 import type { Context, Finding } from '../../kit/checker/pass.js';
-import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
+import { SETTINGS_FILE } from '../../kit/project/studio-config.js';
 import { configFinding as finding, prefixed } from './config.finding.js';
 
 // invariant: a content repository holds no code, so it holds no manifest: a `package.json` beside the declaration makes it a project, which declares the kind it is.

@@ -7,7 +7,7 @@
 ## Context
 
 [ADR-018](018-a-project-declares-what-it-is-and-every-config-follows.md) made
-`jterrazz.config.ts` the one settings file, and every section of it a name
+`studio.config.ts` the one settings file, and every section of it a name
 mapped to its reason. Two years of defaults then landed there instead of in
 the toolchain. This package's own file declared the `lint/` it ships as
 mutation targets, which every library shipping rules declares the same way;
@@ -48,7 +48,7 @@ sources as text reads them as written under mutation, through `originalOf`,
 instead of being excluded. A repository held to its own presets lists them
 through `ownPresets`.
 
-`jterrazz.config.ts` holds what the project is, its presets, and its true
+`studio.config.ts` holds what the project is, its presets, and its true
 exceptions, each with its reason; the drift report counts them.
 
 ## Consequences

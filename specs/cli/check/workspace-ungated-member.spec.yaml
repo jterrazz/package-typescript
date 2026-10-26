@@ -42,13 +42,13 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              nothing: a monorepo, each member its own
-            exceptions                            0
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
+            declared                            nothing: a monorepo, each member its own
+            exceptions                          0
+            rules off vs profile                none
+            suppressions                        0
+            .studio/oxlint-suppressions.json    nothing held
+            .studio/baseline.json › typescript  nothing held
+            tool versions                       in range
 
            END  Finalizing quality checks
 

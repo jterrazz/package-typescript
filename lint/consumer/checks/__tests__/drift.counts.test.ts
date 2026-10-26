@@ -22,13 +22,13 @@ describe('drift.counts', () => {
         // Given - a project with no declaration, no exception, no rule off and nothing held
         // Then - every row says so
         expect(driftLines(NOTHING)).toStrictEqual([
-            '  declared                              nothing: node, the default',
-            '  exceptions                            0',
-            '  rules off vs profile                  none',
-            '  suppressions                          0',
-            '  .jterrazz/oxlint-suppressions.json    nothing held',
-            '  .jterrazz/baseline.json › typescript  nothing held',
-            '  tool versions                         in range',
+            '  declared                            nothing: node, the default',
+            '  exceptions                          0',
+            '  rules off vs profile                none',
+            '  suppressions                        0',
+            '  .studio/oxlint-suppressions.json    nothing held',
+            '  .studio/baseline.json › typescript  nothing held',
+            '  tool versions                       in range',
         ]);
     });
 
@@ -59,18 +59,18 @@ describe('drift.counts', () => {
 
         // Then - the totals over root and members, each member holding any on a row of its own, and every list named
         expect(driftLines(counts)).toStrictEqual([
-            '  declared                              library on node',
-            '  exceptions                            5',
-            '    apps/a                              2 exceptions',
-            '  rules off vs profile                  2 (eqeqeq, no-console)',
-            '  laws set aside                        2 (names, comments)',
-            '  suppressions                          4 + 2 mutation directives',
-            '  unmeasured                            3 mutants (browser-side)',
-            '    apps/a                              1 unmeasured mutants',
-            '  .jterrazz/oxlint-suppressions.json    5',
-            '  .jterrazz/baseline.json › typescript  7',
-            '  .jterrazz/baseline.json › other-tool  unreadable',
-            '  tool versions                         oxlint 1.0.0 old, knip absent',
+            '  declared                            library on node',
+            '  exceptions                          5',
+            '    apps/a                            2 exceptions',
+            '  rules off vs profile                2 (eqeqeq, no-console)',
+            '  laws set aside                      2 (names, comments)',
+            '  suppressions                        4 + 2 mutation directives',
+            '  unmeasured                          3 mutants (browser-side)',
+            '    apps/a                            1 unmeasured mutants',
+            '  .studio/oxlint-suppressions.json    5',
+            '  .studio/baseline.json › typescript  7',
+            '  .studio/baseline.json › other-tool  unreadable',
+            '  tool versions                       oxlint 1.0.0 old, knip absent',
         ]);
     });
 
@@ -88,16 +88,16 @@ describe('drift.counts', () => {
 
         // Then - the monorepo's declaration, the member's mutants alone, and the rows aligned on the longest label
         expect(driftLines(counts)).toStrictEqual([
-            '  declared                                       nothing: a monorepo, each member its own',
-            '  exceptions                                     0',
-            '  rules off vs profile                           none',
-            '  suppressions                                   0',
-            '  unmeasured                                     3 mutants (browser-side)',
-            '    apps/a                                       3 unmeasured mutants',
-            '  .jterrazz/oxlint-suppressions.json             nothing held',
-            '  .jterrazz/baseline.json › typescript           0',
-            '  .jterrazz/baseline.json › a-long-section-name  1',
-            '  tool versions                                  in range',
+            '  declared                                     nothing: a monorepo, each member its own',
+            '  exceptions                                   0',
+            '  rules off vs profile                         none',
+            '  suppressions                                 0',
+            '  unmeasured                                   3 mutants (browser-side)',
+            '    apps/a                                     3 unmeasured mutants',
+            '  .studio/oxlint-suppressions.json             nothing held',
+            '  .studio/baseline.json › typescript           0',
+            '  .studio/baseline.json › a-long-section-name  1',
+            '  tool versions                                in range',
         ]);
     });
 
@@ -105,7 +105,7 @@ describe('drift.counts', () => {
         // Given - a project whose baseline holds no section at all
         // Then - the values still open where the baseline's label would end
         expect(driftLines({ ...NOTHING, held: [] }).at(-1)).toBe(
-            '  tool versions                         in range',
+            '  tool versions                       in range',
         );
     });
 

@@ -48,8 +48,8 @@ them green unmeasured.
 
 The last commit was not enough. A branch whose last commit changes docs
 read "0 detected", green, while the commits before it held sources no gate
-had measured (jterrazz-design, package-manifest, hoverfly-lsp, package-analytics,
-jterrazz-studio, jterrazz-web). The clean-tree base is now the merge-base with
+had measured (studio-design, package-manifest, hoverfly-lsp, package-analytics,
+studio-workstation, jterrazz-web). The clean-tree base is now the merge-base with
 the default branch: `merge-base..HEAD` for a branch that holds commits of its
 own, the last commit only on the default branch. The default branch is
 `origin/HEAD`'s, else `main`, else `master`.

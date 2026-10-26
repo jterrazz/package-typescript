@@ -260,7 +260,7 @@ describe('architecture', () => {
         expect(problem.result).toStrictEqual({
             failed: true,
             lines: [
-                'found: jterrazz.config.ts does not load · why: every law a project is held to is resolved from that file, and a file that cannot be resolved judges nothing · fix: correct jterrazz.config.ts until it loads and each preset and section has its declared shape, then run again · read: docs/reference/configuration.md#the-merge-order',
+                'found: studio.config.ts does not load · why: every law a project is held to is resolved from that file, and a file that cannot be resolved judges nothing · fix: correct studio.config.ts until it loads and each preset and section has its declared shape, then run again · read: docs/reference/configuration.md#the-merge-order',
             ],
         });
     });

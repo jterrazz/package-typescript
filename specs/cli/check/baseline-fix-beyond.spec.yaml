@@ -34,7 +34,7 @@ runs:
 
           ✗ Some checks failed, first Oxlint Fix: {{any}}
       files:
-          .jterrazz/oxlint-suppressions.json:
+          .studio/oxlint-suppressions.json:
               equals: |
                   {
                       "index.ts": {

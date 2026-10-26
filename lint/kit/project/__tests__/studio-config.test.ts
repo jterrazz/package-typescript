@@ -3,11 +3,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { readConfig, readConfigSync } from '../jterrazz-config.js';
 import type { BasePresets } from '../preset.js';
+import { readConfig, readConfigSync } from '../studio-config.js';
 
 function unitWith(files: Readonly<Record<string, string>>): string {
-    const unit = mkdtempSync(join(tmpdir(), 'jterrazz-config-'));
+    const unit = mkdtempSync(join(tmpdir(), 'studio-config-'));
     onTestFinished(() => {
         rmSync(unit, { force: true, recursive: true });
     });
@@ -32,12 +32,12 @@ const BASE: BasePresets = (declaration, dependencies) => [
     },
 ];
 
-describe('jterrazz-config', () => {
+describe('studio-config', () => {
     test('readConfig and readConfigSync — the base presets read the packages the unit’s own manifest declares, with or without a settings file', async () => {
         // Given - a unit with a manifest and no settings file, and one declaring an api
         const bare = unitWith({ 'package.json': MANIFEST });
         const declared = unitWith({
-            'jterrazz.config.ts': "export default { kind: 'api', platform: 'node' };\n",
+            'studio.config.ts': "export default { kind: 'api', platform: 'node' };\n",
             'package.json': MANIFEST,
         });
 
@@ -66,14 +66,14 @@ describe('jterrazz-config', () => {
     test('readConfigSync — a settings file is read once per process, and one that fails to load is its problem', () => {
         // Given - a unit whose settings file loads, then changes, and one whose file throws
         const unit = unitWith({
-            'jterrazz.config.ts': "export default { kind: 'cli', platform: 'node' };\n",
+            'studio.config.ts': "export default { kind: 'cli', platform: 'node' };\n",
         });
         const first = readConfigSync(unit, BASE);
         writeFileSync(
-            join(unit, 'jterrazz.config.ts'),
+            join(unit, 'studio.config.ts'),
             "export default { kind: 'api', platform: 'node' };\n",
         );
-        const broken = unitWith({ 'jterrazz.config.ts': "throw new Error('no settings here');\n" });
+        const broken = unitWith({ 'studio.config.ts': "throw new Error('no settings here');\n" });
 
         // Then - the second reading is the first itself, and the broken file names its error
         expect(readConfigSync(unit, BASE)).toBe(first);
@@ -86,8 +86,8 @@ describe('jterrazz-config', () => {
     test('readConfig and readConfigSync — a file exporting no settings object, or settings that do not resolve, is its problem', async () => {
         // Given - a settings file whose default export is a number, and one whose presets are no list
         const units = [
-            unitWith({ 'jterrazz.config.ts': 'export default 42;\n' }),
-            unitWith({ 'jterrazz.config.ts': "export default { presets: 'test' };\n" }),
+            unitWith({ 'studio.config.ts': 'export default 42;\n' }),
+            unitWith({ 'studio.config.ts': "export default { presets: 'test' };\n" }),
         ];
 
         // When - each is read both ways
@@ -108,7 +108,7 @@ describe('jterrazz-config', () => {
     test('readConfig — a warning the settings file raises reaches the process, but Node’s typeless-package one, and the process keeps its own emitter', async () => {
         // Given - a settings file raising a typeless-package warning both ways Node spells it, then others: with a code, with none, with a type, with nothing
         const unit = unitWith({
-            'jterrazz.config.ts': [
+            'studio.config.ts': [
                 "process.emitWarning('typeless', 'MODULE_TYPELESS_PACKAGE_JSON');",
                 "process.emitWarning('typeless', { code: 'MODULE_TYPELESS_PACKAGE_JSON' });",
                 "process.emitWarning('kept', { code: 'OTHER' });",

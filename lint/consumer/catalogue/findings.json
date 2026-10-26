@@ -2,17 +2,17 @@
     {
         "family": "config",
         "id": "config/project-declared",
-        "sentence": "A project (a single-project repository, or each member of a monorepo) declares what it is once, its kind and its platform, in jterrazz.config.ts."
+        "sentence": "A project (a single-project repository, or each member of a monorepo) declares what it is once, its kind and its platform, in studio.config.ts."
     },
     {
         "family": "config",
         "id": "config/settings-load-synchronously",
-        "sentence": "A settings file loads synchronously too, since the oxlint rules read jterrazz.config.ts so, and one they cannot load would leave them judging on defaults."
+        "sentence": "A settings file loads synchronously too, since the oxlint rules read studio.config.ts so, and one they cannot load would leave them judging on defaults."
     },
     {
         "family": "config",
         "id": "config/editor-file-derived",
-        "sentence": "Each config file an editor discovers is the file jterrazz.config.ts derives, so the editor and the check judge alike."
+        "sentence": "Each config file an editor discovers is the file studio.config.ts derives, so the editor and the check judge alike."
     },
     {
         "family": "config",
@@ -22,7 +22,7 @@
     {
         "family": "config",
         "id": "config/no-tool-config",
-        "sentence": "A tool only the toolchain runs keeps no config file of its own: the command hands it the config jterrazz.config.ts derives."
+        "sentence": "A tool only the toolchain runs keeps no config file of its own: the command hands it the config studio.config.ts derives."
     },
     {
         "family": "config",
@@ -156,8 +156,8 @@
     },
     {
         "family": "tree",
-        "id": "names/jterrazz-config-loads",
-        "sentence": "The settings file jterrazz.config.ts loads, and its typescript section has the declared shape."
+        "id": "names/studio-config-loads",
+        "sentence": "The settings file studio.config.ts loads, and its typescript section has the declared shape."
     },
     {
         "family": "tree",

@@ -27,8 +27,8 @@ async function selectedRun(): Promise<number> {
 
 // invariant: a fixture that declares no kind is judged by every pass but the Config pass, whose own specs refuse it: each spec reads the one behaviour it is about.
 const undeclared =
-    !existsSync('jterrazz.config.ts') ||
-    !/\bkind\s*:/u.test(readFileSync('jterrazz.config.ts', 'utf8'));
+    !existsSync('studio.config.ts') ||
+    !/\bkind\s*:/u.test(readFileSync('studio.config.ts', 'utf8'));
 
 process.exitCode =
     requested === ''

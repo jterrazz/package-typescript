@@ -54,13 +54,13 @@ describe('resolution', () => {
 
              DRIFT  Deviations from the profile
 
-              declared                              api on node
-              exceptions                            0
-              rules off vs profile                  none
-              suppressions                          0
-              .jterrazz/oxlint-suppressions.json    nothing held
-              .jterrazz/baseline.json › typescript  nothing held
-              tool versions                         tsc (Go) absent, oxlint absent, oxfmt absent, oxlint-tsgolint absent, knip absent, dependency-cruiser absent, ls-lint absent, rumdl absent
+              declared                            api on node
+              exceptions                          0
+              rules off vs profile                none
+              suppressions                        0
+              .studio/oxlint-suppressions.json    nothing held
+              .studio/baseline.json › typescript  nothing held
+              tool versions                       tsc (Go) absent, oxlint absent, oxfmt absent, oxlint-tsgolint absent, knip absent, dependency-cruiser absent, ls-lint absent, rumdl absent
 
              END  Finalizing quality checks
 

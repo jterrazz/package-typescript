@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 
 import type { Context, Finding } from '../../kit/checker/pass.js';
-import { SETTINGS_FILE, synchronousLoadProblem } from '../../kit/project/jterrazz-config.js';
+import { SETTINGS_FILE, synchronousLoadProblem } from '../../kit/project/studio-config.js';
 import { configFinding } from './config.finding.js';
 
 /** The unit's settings file, when it loads only asynchronously, since the oxlint rules load it synchronously; one that loads in neither way is the declaration's finding. */

@@ -18,7 +18,7 @@ outside a spine of `src/`, and demanded the six gestures of a Makefile
 that has nothing to install or build. The only gate reachable was
 `docs-layout`, which has a door of its own for any tree.
 
-Forcing a `package.json` and a `jterrazz.config.ts` to silence them was
+Forcing a `package.json` and a `studio.config.ts` to silence them was
 refused by all six: it invents a JavaScript project. The two other doors
 proposed (one command per tree pass, or a skip list) put the knowledge of
 what a repository without code owes in each caller.
@@ -27,7 +27,7 @@ what a repository without code owes in each caller.
 
 - `content` is a kind: a repository whose product is not built, typed or
   linted by this toolchain. Its declaration is the least ceremony the
-  toolchain can read: a `jterrazz.config.ts` with no `package.json`, which
+  toolchain can read: a `studio.config.ts` with no `package.json`, which
   needs no import, since the file is a plain object:
   `export default { kind: 'content' };`.
 - It declares no platform: it runs no code, so a platform beside it is

@@ -23,7 +23,7 @@ pinned to one exact version, run by `check` and `fix` for every consumer with
 no configuration, and keeps its own code only for what the tool cannot express.
 
 - **dependency-cruiser** judges import boundaries on the resolved graph: the
-  layer map a project declares in `jterrazz.config.ts`
+  layer map a project declares in `studio.config.ts`
   (`typescript.architecture`: the shipped `hexagonal` map and its own
   `layers`), each violation printed at its import in four parts. The layer
   compiler, the `hexagonal`/`layers()`/`HEXAGONAL_MAP` oxlint exports and the
@@ -62,7 +62,7 @@ no configuration, and keeps its own code only for what the tool cannot express.
   would be the same directive reported a second time. It keeps only the
   rewrite of `@ts-ignore` into `@ts-expect-error` in `fix`.
 - **oxlint's bulk suppressions** hold the lint debt: `oxlint-suppressions.json`,
-  exact per file and rule, both ways. `jterrazz.baseline.json` keeps only what
+  exact per file and rule, both ways. `studio.baseline.json` keeps only what
   no linter judges: the Architecture, Names and Comments passes, and `@jterrazz/test`'s
   checker passes. It requires every rule to error: oxlint holds errors alone, so
   the warn tier goes, here and in `@jterrazz/test`. Supersedes, in part,
@@ -72,8 +72,8 @@ no configuration, and keeps its own code only for what the tool cannot express.
 
 - Fewer lines of our own, and each judge is the one its ecosystem maintains.
 - A consumer composing `layers({ map: HEXAGONAL_MAP })` moves the map to
-  `jterrazz.config.ts` (`typescript: { architecture: { hexagonal: true } }`);
-  one keeping oxlint rules in `jterrazz.baseline.json › typescript` or
+  `studio.config.ts` (`typescript: { architecture: { hexagonal: true } }`);
+  one keeping oxlint rules in `studio.baseline.json › typescript` or
   `jterrazz/*` keys in its `test` section runs `typescript baseline`, then
   `jterrazz-test-check baseline`.
 - oxlint's suppression flags are not in its `--help` yet: the version is pinned,

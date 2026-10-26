@@ -205,7 +205,7 @@ export default fragment({
         'one-var': on(['never']),
 
         'capitalized-comments': off({
-            by: 'jterrazz-design: 198 of 198 reports were false positives (quality study, 2026-09-15)',
+            by: 'studio-design: 198 of 198 reports were false positives (quality study, 2026-09-15)',
             kind: 'evidence',
         }),
         'default-case': off(
@@ -237,7 +237,7 @@ export default fragment({
         ),
         'new-cap': off(
             {
-                by: "rule review, 2026-10-05: 37 reports across the estate (jterrazz-design 20, signews-mobile 14, spwn 3), not one a defect: libraries' factories their authors named in capitals (react-native-gesture-handler's `Gesture.Pan()`, React Native's `PlatformColor` and `DynamicColorIOS`, Skia's `RuntimeEffect.Make`, next/font's `Geist(...)`) and signews-mobile's dependency-injection `Injectable(...)`; the defect the rule guards, a class called without `new`, is TS2348 under the type check",
+                by: "rule review, 2026-10-05: 37 reports across the estate (studio-design 20, signews-mobile 14, spwn 3), not one a defect: libraries' factories their authors named in capitals (react-native-gesture-handler's `Gesture.Pan()`, React Native's `PlatformColor` and `DynamicColorIOS`, Skia's `RuntimeEffect.Make`, next/font's `Geist(...)`) and signews-mobile's dependency-injection `Injectable(...)`; the defect the rule guards, a class called without `new`, is TS2348 under the type check",
                 kind: 'evidence',
             },
             RULE_REVIEW_SINCE,

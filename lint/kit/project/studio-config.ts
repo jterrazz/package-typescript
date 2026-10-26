@@ -12,7 +12,7 @@ import { declaredDependencies } from './manifest.js';
 import { resolveConfig } from './preset.js';
 import type { BasePresets, Resolution } from './preset.js';
 
-export const SETTINGS_FILE = 'jterrazz.config.ts';
+export const SETTINGS_FILE = 'studio.config.ts';
 
 export const DEPENDENCY_CRUISER_CONFIGS = [
     '.dependency-cruiser.cjs',

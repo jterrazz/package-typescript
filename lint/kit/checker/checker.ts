@@ -4,9 +4,9 @@ import { argv, exit, stdout } from 'node:process';
 
 import { invariant } from '../catalogue/lesson.js';
 import { removeEmptyDirectory } from '../project/empty-directories.js';
-import { readConfig } from '../project/jterrazz-config.js';
 import type { BasePresets, Resolution } from '../project/preset.js';
 import { orRefused, projectFiles } from '../project/project-files.js';
+import { readConfig } from '../project/studio-config.js';
 import { readCommandLine } from './command-line.js';
 import type { CommandLine } from './command-line.js';
 import { heldSummary, judgeHeld } from './held.js';

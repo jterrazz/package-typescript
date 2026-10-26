@@ -18,7 +18,7 @@ test for an algorithm a spec cannot reach cheaply. Under that doctrine a
 module test often runs a line without judging it, because the line's judge
 is a spec: a presenter whose output a command's spec compares whole, an
 operation a served route's spec drives. The four pilots of vision 17
-measured what the order costs. The jterrazz-os workspace, measured for the
+measured what the order costs. The studio-os workspace, measured for the
 first time, left 934 module-test survivors before any spec could answer
 (655 in its CLI, 166 in its connectors, 78 in its console), so its
 `make check` could not carry the verdict at all; the gate was green by

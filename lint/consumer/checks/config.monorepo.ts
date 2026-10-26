@@ -1,7 +1,7 @@
 import type { Context, Finding } from '../../kit/checker/pass.js';
-import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import { declaredAs, SUITE_FOLDER } from '../../kit/project/project-kind.js';
 import type { ProjectIdentity } from '../../kit/project/project-kind.js';
+import { SETTINGS_FILE } from '../../kit/project/studio-config.js';
 import { configFinding as finding } from './config.finding.js';
 import { manifestFindings } from './config.manifest.js';
 

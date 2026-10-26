@@ -1,6 +1,6 @@
 import type { Finding } from '../../kit/checker/pass.js';
 import { isJsonObject, objectOf } from '../../kit/project/json.js';
-import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
+import { SETTINGS_FILE } from '../../kit/project/studio-config.js';
 import { namesFinding } from './names.lessons.js';
 
 /** Each folder `typescript.roots` declares, mapped to its reason, written bare or as `{ reason, verbatim: true }`. */

@@ -2,8 +2,8 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { readSettings } from '../../../../lint/index.rules.js';
-import { SETTINGS_FILE } from '../../../../lint/kit/project/jterrazz-config.js';
 import type { PresetChecker } from '../../../../lint/kit/project/preset.js';
+import { SETTINGS_FILE } from '../../../../lint/kit/project/studio-config.js';
 import { presetChecker } from '../../../drivers/checker/checker.js';
 import type { Launched } from './launched.js';
 import type { Check } from './setup.js';

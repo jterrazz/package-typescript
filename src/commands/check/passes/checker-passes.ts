@@ -4,13 +4,13 @@ import process from 'node:process';
 import { isCommentedElsewhere } from '../../../../lint/kit/project/comments.js';
 import { isFileOnDisk } from '../../../../lint/kit/project/fs-cache.js';
 import { laidOutHexagonally } from '../../../../lint/kit/project/hexagonal-layout.js';
-import {
-    DEPENDENCY_CRUISER_CONFIGS,
-    SETTINGS_FILE,
-} from '../../../../lint/kit/project/jterrazz-config.js';
 import { readManifest } from '../../../../lint/kit/project/manifest.js';
 import { projectFiles } from '../../../../lint/kit/project/project-files.js';
 import { publishes } from '../../../../lint/kit/project/project-kind.js';
+import {
+    DEPENDENCY_CRUISER_CONFIGS,
+    SETTINGS_FILE,
+} from '../../../../lint/kit/project/studio-config.js';
 import { checker } from '../../../drivers/checker/checker.js';
 import { RUMDL_CONFIG } from '../../../drivers/rumdl/rumdl.js';
 import type { Launched } from './launched.js';

@@ -89,7 +89,7 @@ describe('content', () => {
              RUN  Names (tree)
 
             drafts/:1:1: error names(no-empty-directory): found: \`drafts/\` holds no file · why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there · fix: delete it (\`typescript fix\` does), or put the file it was made for in it · read: docs/reference/quality-checks.md#an-empty-directory
-            found: every finding above, and .jterrazz/baseline.json records no \`names/\` entry in its \`typescript\` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-jterrazzbaselinejson-still-holds
+            found: every finding above, and .studio/baseline.json records no \`names/\` entry in its \`typescript\` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-studiobaselinejson-still-holds
             ✗ Failed with exit code 1 ({{duration}})
 
              RUN  Secrets (credentials)
@@ -108,6 +108,6 @@ describe('content', () => {
 
         // Then - the linter's ledger is not written
         expect(result.exitCode).toBe(0);
-        expect(result.file('.jterrazz/oxlint-suppressions.json').exists).toBe(false);
+        expect(result.file('.studio/oxlint-suppressions.json').exists).toBe(false);
     });
 });

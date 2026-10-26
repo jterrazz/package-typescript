@@ -58,7 +58,7 @@ describe('auditLinks', () => {
             links: {
                 ...manual().links,
                 'docs/concepts/architecture.md': [
-                    'https://github.com/jterrazz/jterrazz-studio/blob/main/docs/11-repo-structure.md',
+                    'https://github.com/jterrazz/studio-workstation/blob/main/docs/11-repo-structure.md',
                     '#the-judging-layer',
                     '../../README.md',
                     '../guides/develop.md',

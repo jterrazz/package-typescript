@@ -3,10 +3,10 @@ import { describe, expect, test } from 'vitest';
 import { declaredRootsFindings, declaredRootsOf, isDeclaredRoot } from '../names.roots.js';
 
 const MESSAGES = [
-    "found: `apps/api/old/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` and holds no swept file; the sweep drops what git ignores, a Go module's `testdata/` and the ground of a test · why: A root declared in typescript.roots holds a file git does not ignore. · fix: delete the entry · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
-    "found: `apps/api/tmp/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` with no reason · why: A root declared in typescript.roots states why the repository keeps it. · fix: say why the repository keeps it · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
-    "found: `apps/api/gone/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` and holds no swept file; the sweep drops what git ignores, a Go module's `testdata/` and the ground of a test · why: A root declared in typescript.roots holds a file git does not ignore. · fix: delete the entry · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
-    "found: `apps/api/sql/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` with no reason · why: A root declared in typescript.roots states why the repository keeps it. · fix: say why the repository keeps it · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
+    "found: `apps/api/old/` is declared in apps/api/studio.config.ts's `typescript.roots` and holds no swept file; the sweep drops what git ignores, a Go module's `testdata/` and the ground of a test · why: A root declared in typescript.roots holds a file git does not ignore. · fix: delete the entry · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
+    "found: `apps/api/tmp/` is declared in apps/api/studio.config.ts's `typescript.roots` with no reason · why: A root declared in typescript.roots states why the repository keeps it. · fix: say why the repository keeps it · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
+    "found: `apps/api/gone/` is declared in apps/api/studio.config.ts's `typescript.roots` and holds no swept file; the sweep drops what git ignores, a Go module's `testdata/` and the ground of a test · why: A root declared in typescript.roots holds a file git does not ignore. · fix: delete the entry · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
+    "found: `apps/api/sql/` is declared in apps/api/studio.config.ts's `typescript.roots` with no reason · why: A root declared in typescript.roots states why the repository keeps it. · fix: say why the repository keeps it · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
 ];
 
 describe('names.roots', () => {
@@ -98,8 +98,8 @@ describe('names.roots', () => {
             ['packages/', 'names/declared-root-is-first-level'],
         ]);
         expect(findings.map(({ message }) => message.split(' · ')[0])).toStrictEqual([
-            "found: `apps/playground/` is declared in jterrazz.config.ts's `typescript.roots`, and a root is a first-level folder",
-            "found: `packages/` is declared in jterrazz.config.ts's `typescript.roots`, and it is a folder of the spine",
+            "found: `apps/playground/` is declared in studio.config.ts's `typescript.roots`, and a root is a first-level folder",
+            "found: `packages/` is declared in studio.config.ts's `typescript.roots`, and it is a folder of the spine",
         ]);
         expect(findings.map(({ message }) => message.split(' · ')[2])).toStrictEqual([
             'fix: declare the first-level folder, `apps`, or delete the entry',

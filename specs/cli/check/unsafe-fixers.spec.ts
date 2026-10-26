@@ -32,7 +32,7 @@ describe('unsafe-fixers', () => {
 
         // Then - oxlint's rewrite of the file under the wrapper is undone, so the debt stays held and fix is green
         expect(fixed.exitCode).toBe(0);
-        const held: unknown = JSON.parse(fixed.file('.jterrazz/oxlint-suppressions.json').content);
+        const held: unknown = JSON.parse(fixed.file('.studio/oxlint-suppressions.json').content);
         expect(held).toStrictEqual({
             'index.ts': { 'typescript/promise-function-async': { count: 1 } },
         });

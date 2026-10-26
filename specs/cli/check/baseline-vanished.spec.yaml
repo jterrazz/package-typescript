@@ -12,7 +12,7 @@ runs:
 
            RUN  Oxlint Check
 
-          found: .jterrazz/oxlint-suppressions.json holds entries for files that are gone: src/moved.ts · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/reference/quality-checks.md#the-ratchet
+          found: .studio/oxlint-suppressions.json holds entries for files that are gone: src/moved.ts · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/reference/quality-checks.md#the-ratchet
           ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Oxfmt Check
@@ -41,17 +41,17 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              nothing: node, the default
-            exceptions                            0
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    2
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
+            declared                            nothing: node, the default
+            exceptions                          0
+            rules off vs profile                none
+            suppressions                        0
+            .studio/oxlint-suppressions.json    2
+            .studio/baseline.json › typescript  nothing held
+            tool versions                       in range
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed, first Oxlint Check: found: .jterrazz/oxlint-suppressions.json holds entries for files that are gone: src/moved.ts · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/reference/quality-checks.md#the-ratchet
+          ✗ Some checks failed, first Oxlint Check: found: .studio/oxlint-suppressions.json holds entries for files that are gone: src/moved.ts · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/reference/quality-checks.md#the-ratchet
     - command: fix
       exit: 0
       stdout: |4
@@ -85,7 +85,7 @@ runs:
 
           ✓ All checks passed
       files:
-          .jterrazz/oxlint-suppressions.json:
+          .studio/oxlint-suppressions.json:
               equals: |
                   {
                       "index.ts": {
@@ -133,13 +133,13 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              nothing: node, the default
-            exceptions                            0
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    1
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
+            declared                            nothing: node, the default
+            exceptions                          0
+            rules off vs profile                none
+            suppressions                        0
+            .studio/oxlint-suppressions.json    1
+            .studio/baseline.json › typescript  nothing held
+            tool versions                       in range
 
            END  Finalizing quality checks
 

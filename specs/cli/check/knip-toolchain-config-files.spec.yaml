@@ -1,4 +1,4 @@
-description: reads the toolchain's config files, jterrazz.config.ts too, as used with no tool declared
+description: reads the toolchain's config files, studio.config.ts too, as used with no tool declared
 fixture: ./__fixtures__/knip/toolchain-config-files/
 env: TYPESCRIPT_CHECK_PASSES=knip
 runs:

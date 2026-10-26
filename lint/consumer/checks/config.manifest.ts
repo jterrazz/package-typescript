@@ -2,9 +2,9 @@ import { join } from 'node:path';
 
 import type { Context, Finding } from '../../kit/checker/pass.js';
 import { isJsonObject, parsedObject } from '../../kit/project/json.js';
-import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import { PUBLICATION } from '../../kit/project/project-kind.js';
 import type { CodeKind } from '../../kit/project/project-kind.js';
+import { SETTINGS_FILE } from '../../kit/project/studio-config.js';
 import { configFinding as finding, prefixed } from './config.finding.js';
 
 export const NAMED: Readonly<Record<CodeKind, string>> = {
@@ -139,7 +139,7 @@ export function manifestFindings(
             ? []
             : [
                   finding('config/manifest-keys-known', path, {
-                      fix: "fix the key if it is a typo of one npm reads, move a tool's settings to `jterrazz.config.ts`, or delete it; a key that carries information for a reader (a credit, a fork's origin) moves to the README",
+                      fix: "fix the key if it is a typo of one npm reads, move a tool's settings to `studio.config.ts`, or delete it; a key that carries information for a reader (a credit, a fork's origin) moves to the README",
                       found: `${path} holds ${strays.map((key) => `\`${key}\``).join(', ')}, which npm and the tools of the family read nowhere`,
                   }),
               ]),

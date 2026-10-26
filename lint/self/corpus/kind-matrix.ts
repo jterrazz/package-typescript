@@ -22,7 +22,7 @@ function settingsUnder(folder: string): string[] {
     }
 
     return readdirSync(folder, { recursive: true, withFileTypes: true })
-        .filter((entry) => entry.isFile() && entry.name === 'jterrazz.config.ts')
+        .filter((entry) => entry.isFile() && entry.name === 'studio.config.ts')
         .filter((entry) => !entry.parentPath.includes('node_modules'))
         .map((entry) => readFileSync(join(entry.parentPath, entry.name), 'utf8'));
 }
@@ -38,8 +38,8 @@ function specimenOf(kinds: string, kind: CodeKind): null | Specimen {
               .toSorted()
         : [];
     const settings = [project, ...platformed].flatMap((folder) => settingsUnder(folder));
-    const root = existsSync(join(project, 'jterrazz.config.ts'))
-        ? readFileSync(join(project, 'jterrazz.config.ts'), 'utf8')
+    const root = existsSync(join(project, 'studio.config.ts'))
+        ? readFileSync(join(project, 'studio.config.ts'), 'utf8')
         : '';
     if (!existsSync(spec) || DECLARED_KIND.exec(root)?.groups?.kind !== kind) {
         return null;

@@ -12,7 +12,7 @@ runs:
 
            RUN  Oxlint Check
           {{any}}
-          found: a warn-severity diagnostic, which oxlint lists above · why: .jterrazz/oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run · fix: set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it · read: docs/reference/quality-checks.md#a-warning-is-a-diagnostic
+          found: a warn-severity diagnostic, which oxlint lists above · why: .studio/oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run · fix: set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it · read: docs/reference/quality-checks.md#a-warning-is-a-diagnostic
           ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Oxfmt Check
@@ -41,13 +41,13 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              nothing: node, the default
-            exceptions                            0
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
+            declared                            nothing: node, the default
+            exceptions                          0
+            rules off vs profile                none
+            suppressions                        0
+            .studio/oxlint-suppressions.json    nothing held
+            .studio/baseline.json › typescript  nothing held
+            tool versions                       in range
 
            END  Finalizing quality checks
 
@@ -63,7 +63,7 @@ runs:
 
            RUN  Oxlint Fix
           {{any}}
-          found: a warn-severity diagnostic, which oxlint lists above · why: .jterrazz/oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run · fix: set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it · read: docs/reference/quality-checks.md#a-warning-is-a-diagnostic
+          found: a warn-severity diagnostic, which oxlint lists above · why: .studio/oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run · fix: set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it · read: docs/reference/quality-checks.md#a-warning-is-a-diagnostic
           ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Oxfmt Format

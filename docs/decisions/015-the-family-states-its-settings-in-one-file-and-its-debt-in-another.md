@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-09-23
-**Amended by:** [ADR-018](018-a-project-declares-what-it-is-and-every-config-follows.md), for the ledgers' location: they live under `.jterrazz/`.
+**Amended by:** [ADR-018](018-a-project-declares-what-it-is-and-every-config-follows.md), for the ledgers' location: they live under `.studio/`.
 
 Written 2026-09-27 from the working page of the 17 release, where the owner
 took this decision on 2026-09-23; it was folded here when that page was
@@ -25,14 +25,14 @@ never belong in one file.
 
 ## Decision
 
-- **One settings file for the whole family**, `jterrazz.config.ts` at the
+- **One settings file for the whole family**, `studio.config.ts` at the
   root, typed by `defineConfig` from `@jterrazz/typescript/config`. This
   package owns the file and the `JterrazzConfig` interface; a sibling adds its
   own section by declaration merging, as `@jterrazz/test` adds `test`. Each
   package reads its own section and nothing else. A repository with nothing
   to say keeps no file, and a workspace member may keep its own beside its
   `package.json`. No `jterrazz` key is read from `package.json`.
-- **One generated file for the debt no linter holds**, `jterrazz.baseline.json`,
+- **One generated file for the debt no linter holds**, `studio.baseline.json`,
   one section per package. Each package's command reads, judges and writes
   its own section alone and keeps every other section byte for byte. A
   per-package file is not read.
@@ -48,5 +48,5 @@ never belong in one file.
   is checked by the compiler where it is written, and needs no build.
 - Oxlint's own diagnostics later left the shared file for oxlint's
   `oxlint-suppressions.json` ([ADR-013](013-adopt-the-tool-before-building-the-check.md));
-  what `jterrazz.baseline.json` still holds is
-  [Quality checks § The ratchet](../reference/quality-checks.md#what-jterrazzbaselinejson-still-holds)'s.
+  what `studio.baseline.json` still holds is
+  [Quality checks § The ratchet](../reference/quality-checks.md#what-studiobaselinejson-still-holds)'s.

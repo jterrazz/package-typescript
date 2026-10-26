@@ -33,16 +33,16 @@ const ALWAYS_REPORTS = contribution(
 
 const FAILING_CHECKER = contribution("'conventions checker: 1 error(s) found'", true);
 
-const HELD_CHECKER = contribution("'.jterrazz/baseline.json › test: 3 held across 2 rules'", false);
+const HELD_CHECKER = contribution("'.studio/baseline.json › test: 3 held across 2 rules'", false);
 
-const NOTHING_HELD_CHECKER = contribution("'.jterrazz/baseline.json › test: nothing held'", false);
+const NOTHING_HELD_CHECKER = contribution("'.studio/baseline.json › test: nothing held'", false);
 
 function declared(module: string, { owns = false } = {}): PrepareStep {
     return (workdir) => {
         writeFileSync(join(workdir, 'conventions.mjs'), module);
         const baseline = owns ? "\n            baseline: ['test']," : '';
         writeFileSync(
-            join(workdir, 'jterrazz.config.ts'),
+            join(workdir, 'studio.config.ts'),
             `export default {
     presets: [
         {${baseline}
@@ -92,10 +92,10 @@ describe('baseline-ownership', () => {
         const result = await ground().exec('baseline');
 
         // Then - oxlint's file holds the rule, file by file, and no section holds any: a ledger at zero is no file
-        expect(result.file('.jterrazz/oxlint-suppressions.json').content).toBe(
+        expect(result.file('.studio/oxlint-suppressions.json').content).toBe(
             '{\n    "index.ts": {\n        "jterrazz/flags-every-file": {\n            "count": 1\n        }\n    },\n    "oxlint.config.ts": {\n        "jterrazz/flags-every-file": {\n            "count": 1\n        }\n    }\n}\n',
         );
-        expect(result.file('.jterrazz/baseline.json').exists).toBe(false);
+        expect(result.file('.studio/baseline.json').exists).toBe(false);
     });
 
     test("leaves @jterrazz/test's section byte for byte", async () => {
@@ -106,16 +106,14 @@ describe('baseline-ownership', () => {
         const result = await ground()
             .prepare(
                 written({
-                    '.jterrazz/baseline.json': `{\n  "test": ${section},\n  "typescript": { "names/no-grab-bag-name": 4 }\n}\n`,
+                    '.studio/baseline.json': `{\n  "test": ${section},\n  "typescript": { "names/no-grab-bag-name": 4 }\n}\n`,
                     'index.ts': DEBUGGER,
                 }),
             )
             .exec('baseline');
 
         // Then - only this package's section moved, gone at zero, and the other one's bytes are the ones it wrote
-        expect(result.file('.jterrazz/baseline.json').content).toBe(
-            `{\n    "test": ${section}\n}\n`,
-        );
+        expect(result.file('.studio/baseline.json').content).toBe(`{\n    "test": ${section}\n}\n`);
     });
 
     test("hands the file it writes to the project's own formatter", async () => {
@@ -126,7 +124,7 @@ describe('baseline-ownership', () => {
             .exec('baseline');
 
         // Then - the file is in the project's shape, not the writer's two spaces nor the default's four
-        expect(result.file('.jterrazz/oxlint-suppressions.json').content).toBe(
+        expect(result.file('.studio/oxlint-suppressions.json').content).toBe(
             '{\n\t"index.ts": {\n\t\t"jterrazz/flags-every-file": {\n\t\t\t"count": 1\n\t\t}\n\t},\n\t"oxlint.config.ts": {\n\t\t"jterrazz/flags-every-file": {\n\t\t\t"count": 1\n\t\t}\n\t}\n}\n',
         );
     });
@@ -168,7 +166,7 @@ describe('baseline-ownership', () => {
             .prepare(declared(ALWAYS_REPORTS))
             .prepare(
                 written({
-                    '.jterrazz/oxlint-suppressions.json':
+                    '.studio/oxlint-suppressions.json':
                         '{ "index.ts": { "jterrazz/flags-every-file": { "count": 1 } } }\n',
                 }),
             )
@@ -238,7 +236,7 @@ describe('baseline-ownership', () => {
 
              RUN  Test Conventions (stub)
 
-            .jterrazz/baseline.json › test: 3 held across 2 rules
+            .studio/baseline.json › test: 3 held across 2 rules
             ✓ Passed ({{duration}})
 
              RUN  Suppressions (directives)
@@ -264,7 +262,7 @@ describe('baseline-ownership', () => {
 
              RUN  Test Conventions (stub)
 
-            .jterrazz/baseline.json › test: nothing held
+            .studio/baseline.json › test: nothing held
             ✓ Passed ({{duration}})
 
              RUN  Suppressions (directives)
@@ -308,7 +306,7 @@ describe('baseline-ownership', () => {
         const result = await ground(onlyPasses('oxlint'))
             .prepare(
                 written({
-                    '.jterrazz/baseline.json':
+                    '.studio/baseline.json':
                         '{\n  "typescript": { "eslint/no-debugger": 1, "jterrazz/flags-every-file": 2 }\n}\n',
                 }),
             )
@@ -322,8 +320,8 @@ describe('baseline-ownership', () => {
              RUN  Oxlint Check
 
             {{any}}
-            baseline-moved-to-oxlint  .jterrazz/baseline.json › typescript  found: \`eslint/no-debugger\` is an oxlint rule, and the section holds its count · why: oxlint holds its own rules in .jterrazz/oxlint-suppressions.json, file by file, so the section holds only the passes of this toolchain · fix: run 'typescript baseline', which records the lint debt in .jterrazz/oxlint-suppressions.json and drops the entry · read: docs/reference/quality-checks.md#the-ratchet
-            baseline-moved-to-oxlint  .jterrazz/baseline.json › typescript  found: \`jterrazz/flags-every-file\` is an oxlint rule, and the section holds its count · why: oxlint holds its own rules in .jterrazz/oxlint-suppressions.json, file by file, so the section holds only the passes of this toolchain · fix: run 'typescript baseline', which records the lint debt in .jterrazz/oxlint-suppressions.json and drops the entry · read: docs/reference/quality-checks.md#the-ratchet
+            baseline-moved-to-oxlint  .studio/baseline.json › typescript  found: \`eslint/no-debugger\` is an oxlint rule, and the section holds its count · why: oxlint holds its own rules in .studio/oxlint-suppressions.json, file by file, so the section holds only the passes of this toolchain · fix: run 'typescript baseline', which records the lint debt in .studio/oxlint-suppressions.json and drops the entry · read: docs/reference/quality-checks.md#the-ratchet
+            baseline-moved-to-oxlint  .studio/baseline.json › typescript  found: \`jterrazz/flags-every-file\` is an oxlint rule, and the section holds its count · why: oxlint holds its own rules in .studio/oxlint-suppressions.json, file by file, so the section holds only the passes of this toolchain · fix: run 'typescript baseline', which records the lint debt in .studio/oxlint-suppressions.json and drops the entry · read: docs/reference/quality-checks.md#the-ratchet
             ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks

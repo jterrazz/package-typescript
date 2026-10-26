@@ -27,7 +27,7 @@ const reportsLaid = (workdir: string): void => {
         '{ "name": "quiet", "private": true, "type": "module" }\n',
     );
     writeFileSync(
-        join(workdir, 'packages/quiet/jterrazz.config.ts'),
+        join(workdir, 'packages/quiet/studio.config.ts'),
         "export default { kind: 'library', platform: 'node' };\n",
     );
 };
@@ -65,7 +65,7 @@ function suppressingProject(toolchain: string): string {
 
 describe('drift', () => {
     test('reports a rule the settings set apart from the profile, which the settings say why of', async () => {
-        // Given - a project whose jterrazz.config.ts turns a rule of its profile off, with its reason
+        // Given - a project whose studio.config.ts turns a rule of its profile off, with its reason
         const reasoned = await driftPass
             .fixture(directory('./__fixtures__/drift/project/'))
             .fixture(directory('./__fixtures__/drift/off-with-reason/'))
@@ -74,7 +74,7 @@ describe('drift', () => {
 
         // Then - the report names the declaration and the rule turned off
         expect(reasoned.stdout.text).toContain(
-            'declared                              api on node\n  exceptions                            1\n  rules off vs profile                  1 (no-debugger)\n',
+            'declared                            api on node\n  exceptions                          1\n  rules off vs profile                1 (no-debugger)\n',
         );
         expect(reasoned.exitCode).toBe(0);
     });
@@ -108,8 +108,8 @@ describe('drift', () => {
         const drift = result.stdout.slice(result.stdout.indexOf('Deviations from the profile'));
 
         // Then - the report counts the directive, and names the one tool that deviates
-        expect(drift).toContain('suppressions                          1\n');
-        expect(drift).toContain('tool versions                         knip 0.0.1 old\n');
+        expect(drift).toContain('suppressions                        1\n');
+        expect(drift).toContain('tool versions                       knip 0.0.1 old\n');
     });
 
     test('counts the browser-side mutants the last run left unclaimed, in the report and for a machine', () => {
@@ -139,7 +139,7 @@ describe('drift', () => {
         const machine = run('--json');
 
         // Then - the row counts the two island mutants, never the server one, and the JSON carries the same number
-        expect(human).toContain('unmeasured                            2 mutants (browser-side)\n');
+        expect(human).toContain('unmeasured                          2 mutants (browser-side)\n');
         expect(machine).toContain('"unmeasuredMutants": 2');
     });
 
@@ -159,7 +159,7 @@ describe('drift', () => {
 
         // Then - the row sums root and members, names the member that holds some, and the machine carries the same numbers beside the exceptions' sum
         expect(human.stdout.text).toContain(
-            'unmeasured                            4 mutants (browser-side)\n    packages/clock                      3 unmeasured mutants\n  .jterrazz/oxlint-suppressions.json',
+            'unmeasured                          4 mutants (browser-side)\n    packages/clock                    3 unmeasured mutants\n  .studio/oxlint-suppressions.json',
         );
         expect(reading.replaceAll(/\s+/gu, '')).toContain(
             '"unmeasuredByMember":{"packages/clock":3}',

@@ -60,7 +60,7 @@ runs:
 
           Usage: typescript baseline
 
-          Record the debt: oxlint's in .jterrazz/oxlint-suppressions.json, the rest in .jterrazz/baseline.json
+          Record the debt: oxlint's in .studio/oxlint-suppressions.json, the rest in .studio/baseline.json
 
           Flags:
             -h, --help  Print this help and run nothing

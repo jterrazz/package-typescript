@@ -14,7 +14,7 @@ function repository(): string {
         "export const self = () => ({ name: 'self', package: '@acme/self' });\n",
     );
 
-    return pathToFileURL(join(root, 'jterrazz.config.ts')).href;
+    return pathToFileURL(join(root, 'studio.config.ts')).href;
 }
 
 describe('ownPresets', () => {

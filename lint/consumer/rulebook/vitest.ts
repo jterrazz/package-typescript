@@ -168,10 +168,10 @@ export default fragment({
         }),
         // invariant: a workspace suite's settings file sits under `specs/` and names the `test()` preset, which no vitest global is.
         scoped({
-            files: ['**/specs/jterrazz.config.ts'],
+            files: ['**/specs/studio.config.ts'],
             rules: {
                 'vitest/prefer-importing-vitest-globals': off({
-                    by: "jterrazz-os pilot, 2026-10-07: its fix wrote `import { test } from 'vitest'` over the settings file's `test` preset import, and every reader of the file then judged on defaults",
+                    by: "studio-os pilot, 2026-10-07: its fix wrote `import { test } from 'vitest'` over the settings file's `test` preset import, and every reader of the file then judged on defaults",
                     kind: 'evidence',
                 }),
             },

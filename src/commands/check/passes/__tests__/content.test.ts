@@ -11,7 +11,7 @@ function unitDeclaring(settings: null | string): string {
         rmSync(unit, { force: true, recursive: true });
     });
     if (settings !== null) {
-        writeFileSync(join(unit, 'jterrazz.config.ts'), settings);
+        writeFileSync(join(unit, 'studio.config.ts'), settings);
     }
 
     return unit;

@@ -31,7 +31,7 @@ describe('mutation', () => {
 
             ✗ Mutation failed: first survivor src/discount.ts:2 ConditionalExpression; 5 detected, 2 surviving, 0 never judged, over HEAD..working tree
         `);
-        expect(result.file('.jterrazz/baseline.json').exists).toBe(false);
+        expect(result.file('.studio/baseline.json').exists).toBe(false);
     });
 
     test('typescript mutation — a mutant the module test lets live that a spec detects passes the run', async () => {

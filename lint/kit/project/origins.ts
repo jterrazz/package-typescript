@@ -2,8 +2,8 @@ import type { OxlintConfig } from 'oxlint';
 
 import { isInert } from './inert-laws.js';
 import { isJsonObject } from './json.js';
-import { SETTINGS_FILE } from './jterrazz-config.js';
 import type { Preset, Resolved } from './preset.js';
+import { SETTINGS_FILE } from './studio-config.js';
 
 export type OriginLine = { origin: string; setting: string };
 

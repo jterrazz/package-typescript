@@ -32,7 +32,7 @@ member to judge.
   `workspaces` field). `isMonorepoRoot` and `workspaceMembers` in
   `workspace-members.ts` are the one reader of that fact. A pass that runs
   per member branches on them, never on a kind.
-- The root `jterrazz.config.ts` is the repository's config: its roots, its
+- The root `studio.config.ts` is the repository's config: its roots, its
   oxfmt and oxlint ignores and overrides, its knip entries, its docs, its
   presets. In a single-project repository the root is the project, so the
   file also declares its kind and platform. In a monorepo the root declares

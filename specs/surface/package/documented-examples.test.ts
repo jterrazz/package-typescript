@@ -11,7 +11,7 @@ const EXAMPLE_FENCE = /```(?:ts|tsx|typescript)\n(?<code>[\s\S]*?)```/gu;
 
 const NAMED_FILE = /^\/\/ (?<name>[\w./-]+\.tsx?)\n/u;
 
-const SETTINGS_IMPORT = "from './jterrazz.config.ts'";
+const SETTINGS_IMPORT = "from './studio.config.ts'";
 
 const DEFAULT_SETTINGS = `import { defineConfig } from '@jterrazz/typescript/config';
 
@@ -27,7 +27,7 @@ function pages(): string[] {
             .map((name) => join('docs', section, name)),
     );
 
-    return ['README.md', 'skills/jterrazz-typescript/SKILL.md', 'docs/README.md', ...manual];
+    return ['README.md', 'skills/studio-typescript/SKILL.md', 'docs/README.md', ...manual];
 }
 
 type Example = { code: string; file: string; page: string };
@@ -47,8 +47,8 @@ function layOut(project: string, examples: Example[]): void {
         const path = join(folder, file);
         mkdirSync(dirname(path), { recursive: true });
         writeFileSync(path, code);
-        if (code.includes(SETTINGS_IMPORT) && file !== 'jterrazz.config.ts') {
-            writeFileSync(join(dirname(path), 'jterrazz.config.ts'), DEFAULT_SETTINGS);
+        if (code.includes(SETTINGS_IMPORT) && file !== 'studio.config.ts') {
+            writeFileSync(join(dirname(path), 'studio.config.ts'), DEFAULT_SETTINGS);
         }
     }
     writeFileSync(

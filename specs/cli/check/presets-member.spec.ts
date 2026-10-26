@@ -33,7 +33,7 @@ function contribution(name: string, exit: 0 | 1): string {
 function declare(dir: string, name: string, exit: 0 | 1 = 1): void {
     writeFileSync(join(dir, 'conventions.mjs'), contribution(name, exit));
     writeFileSync(
-        join(dir, 'jterrazz.config.ts'),
+        join(dir, 'studio.config.ts'),
         `export default {
     presets: [
         {
@@ -138,7 +138,7 @@ describe('presets-member', () => {
         expect(result.stdout).toMatch(`
              TYPESCRIPT  Recording the baseline...
 
-            .jterrazz/baseline.json › typescript written: 0 finding(s) across 0 rule(s)
+            .studio/baseline.json › typescript written: 0 finding(s) across 0 rule(s)
             the stub recorded its section
         `);
     });

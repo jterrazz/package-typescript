@@ -42,7 +42,7 @@ When it grows past one file, it splits by layer (`platform.ts`, `outbound.ts`, `
 
 The app's entry and the spec runners are the only modules that import `composition/`. A process entry builds the app with `await using app = compose()`, starts it, and leaving that scope runs the ordered stop. A runner builds it with what the spec stands on, `compose(testConfig, { agents, database })`, hands the specification the part it drives ([`@jterrazz/test` § API specs](https://github.com/jterrazz/package-test/blob/main/docs/guides/api-specs.md#the-constructor)), and disposes the app in its `afterAll`, before the specification's `cleanup`: no runner leaves the graph's connections open behind it.
 
-A UI app has no process to enter: its entry is the module its framework renders first, an Expo app's root layout `app/_layout.tsx` for one. That module composes the app once and hands the graph down through one provider at the top of the tree; a hook or a component reads what it needs from that provider, never from `composition/`. Which module is the entry follows the platform `jterrazz.config.ts` declares; the list is [the hexagonal map](../reference/quality-checks.md#the-hexagonal-map)'s.
+A UI app has no process to enter: its entry is the module its framework renders first, an Expo app's root layout `app/_layout.tsx` for one. That module composes the app once and hands the graph down through one provider at the top of the tree; a hook or a component reads what it needs from that provider, never from `composition/`. Which module is the entry follows the platform `studio.config.ts` declares; the list is [the hexagonal map](../reference/quality-checks.md#the-hexagonal-map)'s.
 
 ### A UI app
 

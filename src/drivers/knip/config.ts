@@ -114,8 +114,8 @@ function conventionIgnores(): string[] {
             ignores.push(`${prefix}docs/**`);
         }
         // outside: the preset's `entry` names the root's settings file and reaches no member's.
-        if (prefix !== '' && existsSync(`${prefix}jterrazz.config.ts`)) {
-            ignores.push(`${prefix}jterrazz.config.ts`);
+        if (prefix !== '' && existsSync(`${prefix}studio.config.ts`)) {
+            ignores.push(`${prefix}studio.config.ts`);
         }
         ignores.push(...groundIgnores(unit, 0));
     }

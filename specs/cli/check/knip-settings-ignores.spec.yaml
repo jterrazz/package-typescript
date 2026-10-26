@@ -1,4 +1,4 @@
-description: ignores the dependencies jterrazz.config.ts names, each with its reason
+description: ignores the dependencies studio.config.ts names, each with its reason
 fixture: ./__fixtures__/knip/with-overrides/
 env: TYPESCRIPT_CHECK_PASSES=knip
 runs:

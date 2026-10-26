@@ -54,7 +54,7 @@ Open these by topic, usually from the `read:` of a finding.
 | Page                                          | Answers                                                                                                          |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | [Commands](reference/commands.md)             | Every command of the binary, and the page that owns each                                                         |
-| [Configuration](reference/configuration.md)   | `jterrazz.config.ts`, the presets a project lists and their merge order, the tsconfig presets, the lint config   |
+| [Configuration](reference/configuration.md)   | `studio.config.ts`, the presets a project lists and their merge order, the tsconfig presets, the lint config     |
 | [Quality checks](reference/quality-checks.md) | Every pass of `check` and `fix`, what makes each fail, the ratchet that holds a project's debt, the drift report |
 | [Lint presets](reference/lint-presets.md)     | The rulebook: its laws, the six profiles, the decisions worth explaining, knip, the full catalogue               |
 | [Building](reference/building.md)             | `build`, `start`, `dev` and `tsc`: what the build derives from the manifest, and what it produces                |

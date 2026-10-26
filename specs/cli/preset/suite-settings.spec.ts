@@ -11,10 +11,10 @@ describe('suite-settings', () => {
         // Given - a workspace suite's settings file listing the `test()` preset, fixed under the node profile
         const result = await oxlintCli
             .fixture(directory('./__fixtures__/suite-settings/'))
-            .exec(`-c ${NODE_CONFIG} --fix specs/jterrazz.config.ts`);
+            .exec(`-c ${NODE_CONFIG} --fix specs/studio.config.ts`);
 
         // Then - no `import { test } from 'vitest'` was written over the preset's name
-        expect(result.file('specs/jterrazz.config.ts').content)
+        expect(result.file('specs/studio.config.ts').content)
             .toBe(`import { test } from '@jterrazz/test/config';
 
 export default { platform: 'node', presets: [test()] };

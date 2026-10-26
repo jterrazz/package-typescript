@@ -6,7 +6,7 @@ runs:
       stdout: |4
            TYPESCRIPT  TypeScript toolchain
 
-          found: `typescript check` has no flag --ignore-pattern, which is retired · why: a path left out of one run is read differently by each gate: the formatter, the Markdown pass and the linter disagreed on what it covered, and 85 goldens were rewritten in one repository · fix: declare the folder in jterrazz.config.ts, where every gate reads it alike: `typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }` · read: docs/reference/quality-checks.md#a-root-beside-the-spine
+          found: `typescript check` has no flag --ignore-pattern, which is retired · why: a path left out of one run is read differently by each gate: the formatter, the Markdown pass and the linter disagreed on what it covered, and 85 goldens were rewritten in one repository · fix: declare the folder in studio.config.ts, where every gate reads it alike: `typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }` · read: docs/reference/quality-checks.md#a-root-beside-the-spine
 
           Usage: typescript check [--cold] [--json]
 
@@ -23,7 +23,7 @@ runs:
       stdout: |4
            TYPESCRIPT  TypeScript toolchain
 
-          found: `typescript fix` has no flag --ignore-pattern, which is retired · why: a path left out of one run is read differently by each gate: the formatter, the Markdown pass and the linter disagreed on what it covered, and 85 goldens were rewritten in one repository · fix: declare the folder in jterrazz.config.ts, where every gate reads it alike: `typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }` · read: docs/reference/quality-checks.md#a-root-beside-the-spine
+          found: `typescript fix` has no flag --ignore-pattern, which is retired · why: a path left out of one run is read differently by each gate: the formatter, the Markdown pass and the linter disagreed on what it covered, and 85 goldens were rewritten in one repository · fix: declare the folder in studio.config.ts, where every gate reads it alike: `typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }` · read: docs/reference/quality-checks.md#a-root-beside-the-spine
 
           Usage: typescript fix
 

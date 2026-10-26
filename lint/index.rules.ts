@@ -2,8 +2,8 @@ import { basePresetsOf } from './consumer/catalogue/preset.js';
 import type { PresetChecks } from './consumer/checks/preset-checks.js';
 import { runChecker as runPasses } from './kit/checker/checker.js';
 import type { Checker } from './kit/checker/pass.js';
-import { readConfig, readConfigSync } from './kit/project/jterrazz-config.js';
 import type { Resolution } from './kit/project/preset.js';
+import { readConfig, readConfigSync } from './kit/project/studio-config.js';
 
 export {
     defineInvariant,
@@ -124,7 +124,7 @@ export const runChecker = async (
     args?: readonly string[],
 ): Promise<never> => await runPasses({ ...checker, base: basePresetsOf }, args);
 
-/** A unit's `jterrazz.config.ts`, resolved with the base preset first. */
+/** A unit's `studio.config.ts`, resolved with the base preset first. */
 export const readSettings = async (unit: string): Promise<Resolution> =>
     await readConfig(unit, basePresetsOf);
 

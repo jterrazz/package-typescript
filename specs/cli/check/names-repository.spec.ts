@@ -77,8 +77,8 @@ describe('names-repository', () => {
 
              RUN  Names (tree)
 
-            data/:1:1: error names(no-undeclared-root-folder): found: \`data/\` is a root outside the spine · why: Every root folder is on the root spine, imposed by a tool, or declared with its reason. · fix: move it under src/, or declare it in jterrazz.config.ts's \`typescript.roots\` with its reason · read: docs/reference/quality-checks.md#a-root-beside-the-spine
-            found: every finding above, and .jterrazz/baseline.json records no \`names/\` entry in its \`typescript\` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-jterrazzbaselinejson-still-holds
+            data/:1:1: error names(no-undeclared-root-folder): found: \`data/\` is a root outside the spine · why: Every root folder is on the root spine, imposed by a tool, or declared with its reason. · fix: move it under src/, or declare it in studio.config.ts's \`typescript.roots\` with its reason · read: docs/reference/quality-checks.md#a-root-beside-the-spine
+            found: every finding above, and .studio/baseline.json records no \`names/\` entry in its \`typescript\` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-studiobaselinejson-still-holds
             ✗ Failed with exit code 1 ({{duration}})
 
              RUN  Secrets (credentials)
@@ -103,8 +103,8 @@ describe('names-repository', () => {
 
         // Then - oxlint holds the debugger, the section the undeclared root folder
         expect({
-            baseline: result.file('.jterrazz/baseline.json').content,
-            suppressed: result.file('.jterrazz/oxlint-suppressions.json').content,
+            baseline: result.file('.studio/baseline.json').content,
+            suppressed: result.file('.studio/oxlint-suppressions.json').content,
         }).toStrictEqual({
             baseline:
                 '{\n    "typescript": {\n        "names/no-undeclared-root-folder": 1\n    }\n}\n',
@@ -160,7 +160,7 @@ describe('names-repository', () => {
 
         // Then - neither ledger is written
         expect(
-            ['.jterrazz/baseline.json', '.jterrazz/oxlint-suppressions.json'].map(
+            ['.studio/baseline.json', '.studio/oxlint-suppressions.json'].map(
                 (path) => result.file(path).exists,
             ),
         ).toStrictEqual([false, false]);
@@ -292,7 +292,7 @@ describe('names-repository', () => {
 
             Makefile:1:1: error names(makefile-answers-every-gesture): found: \`make fix\` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule: every repository answers \`make\` install, build, lint, fix, test and check · read: docs/reference/quality-checks.md#the-six-gestures
             Makefile:1:1: error names(makefile-answers-every-gesture): found: \`make check\` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule: every repository answers \`make\` install, build, lint, fix, test and check · read: docs/reference/quality-checks.md#the-six-gestures
-            found: every finding above, and .jterrazz/baseline.json records no \`names/\` entry in its \`typescript\` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-jterrazzbaselinejson-still-holds
+            found: every finding above, and .studio/baseline.json records no \`names/\` entry in its \`typescript\` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-studiobaselinejson-still-holds
             ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
@@ -365,7 +365,7 @@ describe('names-repository', () => {
             .exec(['baseline', 'check']);
 
         // Then - the entry holds both, and the Names pass is green
-        expect(result.file('.jterrazz/baseline.json').content).toBe(
+        expect(result.file('.studio/baseline.json').content).toBe(
             '{\n    "typescript": {\n        "names/makefile-answers-every-gesture": 2\n    }\n}\n',
         );
         expect(result.stdout).toMatch(`

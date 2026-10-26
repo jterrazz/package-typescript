@@ -16,7 +16,6 @@ import {
     tsconfigAdditionsOf,
 } from '../../kit/project/editor-files.js';
 import { stringsOf } from '../../kit/project/json.js';
-import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import {
     KINDS,
     listed,
@@ -25,6 +24,7 @@ import {
     SUITE_PLATFORMS,
 } from '../../kit/project/project-kind.js';
 import type { ProjectIdentity } from '../../kit/project/project-kind.js';
+import { SETTINGS_FILE } from '../../kit/project/studio-config.js';
 import { isMonorepoRoot, workspaceMembers } from '../../kit/project/workspace-members.js';
 import { contentFindings } from './config.content.js';
 import { configFinding as finding, prefixed } from './config.finding.js';

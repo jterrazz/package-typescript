@@ -8,9 +8,9 @@ runs:
 
            RUN  Config (one file)
 
-          oxfmt.config.ts:1:1: error config(editor-file-derived): found: oxfmt.config.ts is missing · why: Each config file an editor discovers is the file jterrazz.config.ts derives, so the editor and the check judge alike. · fix: run `typescript fix`, which writes it: import { oxfmtConfig } from '@jterrazz/typescript/oxfmt'; export default await oxfmtConfig(import.meta.url); · read: docs/reference/quality-checks.md#the-config-one-file-pass
-          oxlint.config.ts:1:1: error config(editor-file-derived): found: oxlint.config.ts is missing · why: Each config file an editor discovers is the file jterrazz.config.ts derives, so the editor and the check judge alike. · fix: run `typescript fix`, which writes it: import { oxlintConfig } from '@jterrazz/typescript/oxlint'; export default await oxlintConfig(import.meta.url); · read: docs/reference/quality-checks.md#the-config-one-file-pass
-          tsconfig.json:1:1: error config(editor-file-derived): found: tsconfig.json says something other than the file jterrazz.config.ts derives · why: Each config file an editor discovers is the file jterrazz.config.ts derives, so the editor and the check judge alike. · fix: run `typescript fix`, which writes it: {
+          oxfmt.config.ts:1:1: error config(editor-file-derived): found: oxfmt.config.ts is missing · why: Each config file an editor discovers is the file studio.config.ts derives, so the editor and the check judge alike. · fix: run `typescript fix`, which writes it: import { oxfmtConfig } from '@jterrazz/typescript/oxfmt'; export default await oxfmtConfig(import.meta.url); · read: docs/reference/quality-checks.md#the-config-one-file-pass
+          oxlint.config.ts:1:1: error config(editor-file-derived): found: oxlint.config.ts is missing · why: Each config file an editor discovers is the file studio.config.ts derives, so the editor and the check judge alike. · fix: run `typescript fix`, which writes it: import { oxlintConfig } from '@jterrazz/typescript/oxlint'; export default await oxlintConfig(import.meta.url); · read: docs/reference/quality-checks.md#the-config-one-file-pass
+          tsconfig.json:1:1: error config(editor-file-derived): found: tsconfig.json says something other than the file studio.config.ts derives · why: Each config file an editor discovers is the file studio.config.ts derives, so the editor and the check judge alike. · fix: run `typescript fix`, which writes it: {
               "extends": "@jterrazz/typescript/tsconfig/react",
               "exclude": [
                   "${configDir}/node_modules",
@@ -64,14 +64,14 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              website on react
-            exceptions                            0
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
+            declared                            website on react
+            exceptions                          0
+            rules off vs profile                none
+            suppressions                        0
+            .studio/oxlint-suppressions.json    nothing held
+            .studio/baseline.json › typescript  nothing held
+            tool versions                       in range
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed, first Config (one file): oxfmt.config.ts:1:1: error config(editor-file-derived): found: oxfmt.config.ts is missing · why: Each config file an editor discovers is the file jterrazz.config.ts derives, so the editor and the check judge alike. · fix: run `typescript fix`, which writes it: import { oxfmtConfig } from '@jterrazz/typescript/oxfmt'; export default await oxfmtConfig(import.meta.url); · read: docs/reference/quality-checks.md#the-config-one-file-pass
+          ✗ Some checks failed, first Config (one file): oxfmt.config.ts:1:1: error config(editor-file-derived): found: oxfmt.config.ts is missing · why: Each config file an editor discovers is the file studio.config.ts derives, so the editor and the check judge alike. · fix: run `typescript fix`, which writes it: import { oxfmtConfig } from '@jterrazz/typescript/oxfmt'; export default await oxfmtConfig(import.meta.url); · read: docs/reference/quality-checks.md#the-config-one-file-pass

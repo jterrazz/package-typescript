@@ -4,8 +4,8 @@ import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
 import { emptyDirectories } from '../../kit/project/empty-directories.js';
 import { objectOf, parsedObject, stringRecordOf, stringsOf } from '../../kit/project/json.js';
 import type { JsonObject } from '../../kit/project/json.js';
-import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import type { Resolution } from '../../kit/project/preset.js';
+import { SETTINGS_FILE } from '../../kit/project/studio-config.js';
 import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import { declaredNamesFindings, declaredNamesRules } from './names.declared.js';
 import { entryGrammarOf } from './names.entries.js';
@@ -188,7 +188,7 @@ function emptyDirectoryFinding(path: string): Finding {
 }
 
 function configFinding(path: string, problem: string): Finding {
-    return namesFinding('names/jterrazz-config-loads', path, {
+    return namesFinding('names/studio-config-loads', path, {
         fix: `correct ${SETTINGS_FILE} until it loads and each preset and section has its declared shape, then run again`,
         found: `\`${path}\` ${problem}`,
     });

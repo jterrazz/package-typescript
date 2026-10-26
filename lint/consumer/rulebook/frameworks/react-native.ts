@@ -26,7 +26,7 @@ export default fragment({
         ),
         'react/purity': off(
             {
-                by: 'jterrazz-design pilot, 2026-10-10: a gesture handler written as a reanimated worklet reads and writes shared values that the compiler rule reads as impure calls in render; the worklet runs on the UI thread, outside React render, so the rule has nothing to say there',
+                by: 'studio-design pilot, 2026-10-10: a gesture handler written as a reanimated worklet reads and writes shared values that the compiler rule reads as impure calls in render; the worklet runs on the UI thread, outside React render, so the rule has nothing to say there',
                 kind: 'evidence',
             },
             '11.0.0',

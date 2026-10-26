@@ -25,7 +25,7 @@ describe('browser-pin', () => {
               @vitest/browser-playwright  4.1.10      ok
 
 
-            Resolved jterrazz.config.ts
+            Resolved studio.config.ts
 
             {{any}}`);
     });
@@ -52,7 +52,7 @@ describe('browser-pin', () => {
 
             found: @vitest/browser-playwright 4.1.9 is not vitest 4.1.10 · why: @vitest/browser-playwright is versioned with vitest and must equal it exactly: a patch apart loads a second copy of its internals · fix: pin both to the same version · read: docs/guides/adopt-a-stricter-release.md#the-provider-pinned-to-its-runner
 
-            Resolved jterrazz.config.ts
+            Resolved studio.config.ts
 
             {{any}}
         `);
@@ -80,7 +80,7 @@ describe('browser-pin', () => {
 
             found: @vitest/browser-playwright 4.1.9 is not vitest 4.1.10 · why: @vitest/browser-playwright is versioned with vitest and must equal it exactly: a patch apart loads a second copy of its internals · fix: pin both to the same version · read: docs/guides/adopt-a-stricter-release.md#the-provider-pinned-to-its-runner
 
-            Resolved jterrazz.config.ts
+            Resolved studio.config.ts
 
             {{any}}
         `);
@@ -106,7 +106,7 @@ describe('browser-pin', () => {
               @vitest/browser-playwright  pnpm-lock.yaml is not parsed here, so the pin is unchecked
 
 
-            Resolved jterrazz.config.ts
+            Resolved studio.config.ts
 
             {{any}}`);
     });
@@ -131,7 +131,7 @@ describe('browser-pin', () => {
               @vitest/browser-playwright  pnpm-lock.yaml is not parsed here, so the pin is unchecked
 
 
-            Resolved jterrazz.config.ts
+            Resolved studio.config.ts
 
             {{any}}`);
     });

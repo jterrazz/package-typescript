@@ -24,7 +24,7 @@ Three generators were open, each tried on every repository whose build
 emits declarations: this package, `@jterrazz/test`, `@jterrazz/intelligence`,
 `@jterrazz/manifest`, `@jterrazz/telemetry`, `@jterrazz/analytics`,
 `@jterrazz/broadcast`, `@jterrazz/attestation`, the `design` member of
-jterrazz-design and the `analysis` member of hoverfly-lsp. The other
+studio-design and the `analysis` member of hoverfly-lsp. The other
 repositories that run `typescript build` (vscode-folder-regex-color,
 signews-api, signews-broadcast) are private, and emit none.
 
@@ -90,12 +90,12 @@ The compiler matters as much as the generator. On the case of
     | telemetry              | 0.87-0.94 s, 359-374 MB     | 0.32-0.33 s, 119-121 MB |
     | analytics              | 0.76-1.05 s, 295-331 MB     | 0.31-0.34 s, 102-103 MB |
     | manifest               | 0.87-0.96 s, 336-387 MB     | 0.28-0.36 s, 102-104 MB |
-    | jterrazz-design        | 0.87-1.08 s, 266-290 MB     | 0.33-0.39 s, 109-112 MB |
+    | studio-design          | 0.87-1.08 s, 266-290 MB     | 0.33-0.39 s, 109-112 MB |
 
 - The declarations are the same types. Against TypeScript 6's, every
   repository above builds the same JavaScript byte for byte; its
   declarations differ on six files here, two on `@jterrazz/test`, two on
-  attestation, two on jterrazz-design and one on hoverfly-lsp, and each
+  attestation, two on studio-design and one on hoverfly-lsp, and each
   compares equal once its string literals are printed in one quote style and
   its unions' members sorted. The native compiler keeps a literal type in the
   quotes of its source, and orders one union of `@jterrazz/test`

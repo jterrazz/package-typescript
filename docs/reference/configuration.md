@@ -2,23 +2,23 @@
 
 What a project says about itself, and where it says it. Most projects stop at the three files of [Getting started](../start/getting-started.md); this page is for the day one has something of its own to declare.
 
-| File                 | Holds                                                                                                          |
-| -------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `jterrazz.config.ts` | what the project is (its `kind` and `platform`), the presets it is held to, and every setting, with its reason |
-| `tsconfig.json`      | an `extends` of the platform's preset, plus what `typescript.tsconfig` adds with its reason                    |
-| `oxlint.config.ts`   | derived from its folder                                                                                        |
-| `oxfmt.config.ts`    | derived from its folder                                                                                        |
-| a preset's own file  | derived by the preset that declares it: `@jterrazz/test`'s `vitest.config.ts`, for a project on its preset     |
-| `.jterrazz/`         | the debt the ratchet holds, tracked, and gone when it is paid ([the ratchet](quality-checks.md#the-ratchet))   |
+| File                | Holds                                                                                                          |
+| ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `studio.config.ts`  | what the project is (its `kind` and `platform`), the presets it is held to, and every setting, with its reason |
+| `tsconfig.json`     | an `extends` of the platform's preset, plus what `typescript.tsconfig` adds with its reason                    |
+| `oxlint.config.ts`  | derived from its folder                                                                                        |
+| `oxfmt.config.ts`   | derived from its folder                                                                                        |
+| a preset's own file | derived by the preset that declares it: `@jterrazz/test`'s `vitest.config.ts`, for a project on its preset     |
+| `.studio/`          | the debt the ratchet holds, tracked, and gone when it is paid ([the ratchet](quality-checks.md#the-ratchet))   |
 
 The derived files are an editor's, which reads its tools' configs from fixed names, and they say nothing of their own: `typescript fix` writes them, and the [Config (one file) pass](quality-checks.md#the-config-one-file-pass) refuses one that says anything else. Every other tool (knip, the build, mutation testing) is configured by the command that runs it, from the same file, and keeps no config at the root.
 
 ## The settings file
 
-`jterrazz.config.ts` is the one settings file of the `@jterrazz` family. This package owns it and types it: `defineConfig` knows every section a package of the family declares, and each package reads only its own.
+`studio.config.ts` is the one settings file of the `@jterrazz` family. This package owns it and types it: `defineConfig` knows every section a package of the family declares, and each package reads only its own.
 
 ```ts
-// jterrazz.config.ts
+// studio.config.ts
 import { test } from '@jterrazz/test/config';
 import { defineConfig } from '@jterrazz/typescript/config';
 
@@ -69,7 +69,7 @@ The kind table names toolchain shapes, never products, and a product that fits n
 A unit runs on one platform, and a folder of it may run on another: an api on `bun` that serves its own React UI from `web/`. `typescript.platforms` names that folder, from the unit, with the platform it runs on and why, and the unit's `oxlint.config.ts` lints it by that platform's profile (its plugins, its rules, the unit's presets and own rules on top) while the rest of the unit keeps its own:
 
 ```ts
-// jterrazz.config.ts
+// studio.config.ts
 import { defineConfig } from '@jterrazz/typescript/config';
 
 export default defineConfig({
@@ -94,7 +94,7 @@ A `library` or a `cli` whose manifest says `"private": true` is not published: a
 
 ### A monorepo
 
-A monorepo is the repository's shape, never a kind ([ADR-024](../decisions/024-a-monorepo-is-the-repositorys-shape-read-from-workspaces-never-a-kind.md)). It is read from the root `package.json`'s `workspaces` (or `pnpm-workspace.yaml`'s `packages`), and nothing declares it again. Its root is a container: it declares no kind and no platform, its manifest is `"private": true`, and its `jterrazz.config.ts` holds the repository's settings alone (roots, oxfmt and oxlint ignores and overrides, knip entries, docs, presets), absent when there are none. The Config pass refuses a kind or a platform at the root, and a root npm would publish, both as `config/kind-matches-manifest`, and a member that declares no kind as `config/project-declared`. One `typescript check` at the root judges each member by its own kind and platform. The shape is proven by a specimen of its own, `specs/shapes/monorepo/`, whose root keeps no `jterrazz.config.ts`.
+A monorepo is the repository's shape, never a kind ([ADR-024](../decisions/024-a-monorepo-is-the-repositorys-shape-read-from-workspaces-never-a-kind.md)). It is read from the root `package.json`'s `workspaces` (or `pnpm-workspace.yaml`'s `packages`), and nothing declares it again. Its root is a container: it declares no kind and no platform, its manifest is `"private": true`, and its `studio.config.ts` holds the repository's settings alone (roots, oxfmt and oxlint ignores and overrides, knip entries, docs, presets), absent when there are none. The Config pass refuses a kind or a platform at the root, and a root npm would publish, both as `config/kind-matches-manifest`, and a member that declares no kind as `config/project-declared`. One `typescript check` at the root judges each member by its own kind and platform. The shape is proven by a specimen of its own, `specs/shapes/monorepo/`, whose root keeps no `studio.config.ts`.
 
 The root's `oxlint.config.ts` lints each member by the platform that member declares, the member's own profile and presets scoped to its folder, so one config serves a React website and a Node api side by side. A member keeps no `oxlint.config.ts` or `oxfmt.config.ts` of its own (a nested one would replace the root's in its subtree), and keeps its own `tsconfig.json`, derived from its platform.
 
@@ -106,17 +106,17 @@ A package hands a project everything it holds it to in one preset: its lint rule
 
 Each pass then reads the resolved settings and holds the project to all of them. A preset's layer prints as `architecture/<name>` and its name rule as `names/<name>`, with the lesson the package wrote.
 
-A settings file that cannot be resolved, such as a `presets` that is not a list of presets, fails the two passes that read it, each in its own words. The Architecture pass prints a bare four-part refusal, with no rule id, because it judged no layer; the Names pass, which reads `typescript.roots`, prints it as the finding `names/jterrazz-config-loads`:
+A settings file that cannot be resolved, such as a `presets` that is not a list of presets, fails the two passes that read it, each in its own words. The Architecture pass prints a bare four-part refusal, with no rule id, because it judged no layer; the Names pass, which reads `typescript.roots`, prints it as the finding `names/studio-config-loads`:
 
 ```text
  RUN  Architecture (layer map)
-found: jterrazz.config.ts does not load: ... · why: ... · fix: correct jterrazz.config.ts until it loads ... · read: docs/reference/configuration.md#the-merge-order
+found: studio.config.ts does not load: ... · why: ... · fix: correct studio.config.ts until it loads ... · read: docs/reference/configuration.md#the-merge-order
 
  RUN  Names (tree)
-jterrazz.config.ts:1:1: error names(jterrazz-config-loads): found: `jterrazz.config.ts` does not load: ... · why: ... · fix: ... · read: docs/reference/configuration.md#the-merge-order
+studio.config.ts:1:1: error names(studio-config-loads): found: `studio.config.ts` does not load: ... · why: ... · fix: ... · read: docs/reference/configuration.md#the-merge-order
 ```
 
-A preset is an object carrying its `name` (the section of `jterrazz.config.ts` it reads, and the prefix of its laws), its `package`, and what it adds:
+A preset is an object carrying its `name` (the section of `studio.config.ts` it reads, and the prefix of its laws), its `package`, and what it adds:
 
 | Key              | Holds                                                                                                                                                                  |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -126,7 +126,7 @@ A preset is an object carrying its `name` (the section of `jterrazz.config.ts` i
 | `layers`         | its import boundaries, in the vocabulary of [the Architecture pass](quality-checks.md#the-architecture-layer-map-pass)                                                 |
 | `names`          | its rules of where a name sits, in ls-lint's ([a name rule](quality-checks.md#a-name-rule-a-project-declares))                                                         |
 | `files`          | the editor files it derives, each with its exact content and whether it sits at the repository root or in every unit                                                   |
-| `baseline`       | the sections of `.jterrazz/baseline.json` it writes and judges                                                                                                         |
+| `baseline`       | the sections of `.studio/baseline.json` it writes and judges                                                                                                           |
 | `checker`        | its own checks: the `module` whose default export is a kit `Contribution`, and the `label` they print under ([A preset's checks](quality-checks.md#a-presets-checks))  |
 | `entries`        | the paths it loads by name, read from its resolved section and the unit's folder, which knip takes as entries ([Unused code](lint-presets.md#unused-code-knip))        |
 | `loadedPackages` | the packages it loads by name for a unit, read off the unit's tree, which knip leaves out of the unused dependencies ([Unused code](lint-presets.md#unused-code-knip)) |
@@ -157,7 +157,7 @@ Resolution is deterministic, and the same in every reader:
 3. The laws, `layers` and `names`, are every preset's in that order, then the project's own (`typescript.architecture.layers`, `typescript.names`).
 4. `oxlint` is the platform's profile, then every preset's config in that order, then the project's own `typescript.oxlint` ([the lint rules](#the-lint-rules)).
 
-`typescript doctor` prints the resolved settings, one per line, each beside the file it comes from (a file of a package's standard, a preset, or `jterrazz.config.ts`), then every law and every one set aside. The oxlint config shows whole: the rulebook's profile for the platform (its rules, JS plugins and overrides), each preset's fragment, then the project's own rules and overrides. A rule shows on one line beside the last of them that sets it, since its level and options are one value a later layer replaces whole. What no file states shows too, beside `derived from the tree`: the build entries read off module names, and what a preset derives, such as `@jterrazz/test`'s test projects. An empty list or record a standard states shows as `[]` or `{}` until a file fills it.
+`typescript doctor` prints the resolved settings, one per line, each beside the file it comes from (a file of a package's standard, a preset, or `studio.config.ts`), then every law and every one set aside. The oxlint config shows whole: the rulebook's profile for the platform (its rules, JS plugins and overrides), each preset's fragment, then the project's own rules and overrides. A rule shows on one line beside the last of them that sets it, since its level and options are one value a later layer replaces whole. What no file states shows too, beside `derived from the tree`: the build entries read off module names, and what a preset derives, such as `@jterrazz/test`'s test projects. An empty list or record a standard states shows as `[]` or `{}` until a file fills it.
 
 A file that does not load, a `presets` that is not a list of presets, a section that is not an object, a setting that replaces a default's shape, a write to a law setting, or a `presets` written inside a section rather than at the top level is refused in four parts by the pass that reads it, reading this heading.
 
@@ -166,7 +166,7 @@ A file that does not load, a `presets` that is not a list of presets, a section 
 A project cannot drop a preset's law by writing over it. It sets one aside in the open, under `optOuts`, naming the law as `<preset>/<rule>` and saying why:
 
 ```ts
-// jterrazz.config.ts
+// studio.config.ts
 import { defineConfig } from '@jterrazz/typescript/config';
 
 export default defineConfig({
@@ -185,7 +185,7 @@ An opt-out with no reason, or one naming a law no preset declares, is refused li
 A package that ships a preset holds itself to it, from its own build: `ownPresets` maps each built module to the preset it exports.
 
 ```ts
-// jterrazz.config.ts
+// studio.config.ts
 import { defineConfig, ownPresets } from '@jterrazz/typescript/config';
 
 export default defineConfig({
@@ -235,7 +235,7 @@ The `astro` preset stands on Astro's own. It extends `astro/tsconfigs/strict` fi
 A project's lint config is derived: the profile of its platform, then what each preset declares, in [the merge order](#the-merge-order). A rule the project sets apart from that is written under `typescript.oxlint`, with the reason it is set apart, and the drift report counts each one ([Quality checks](quality-checks.md#the-drift-report)):
 
 ```ts
-// jterrazz.config.ts
+// studio.config.ts
 import { defineConfig } from '@jterrazz/typescript/config';
 
 export default defineConfig({

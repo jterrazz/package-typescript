@@ -7,7 +7,7 @@ runs:
       stdout: |4
            TYPESCRIPT  Recording the baseline...
 
-          .jterrazz/baseline.json › typescript written: 1 finding(s) across 1 rule(s)
+          .studio/baseline.json › typescript written: 1 finding(s) across 1 rule(s)
     - command: check
       exit: 0
       stdout: |4

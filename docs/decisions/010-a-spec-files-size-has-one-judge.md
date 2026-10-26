@@ -21,4 +21,4 @@ Two caps on one file would disagree. A spec between 301 and 400 lines would pass
 
 - A spec file's limit, and a test body's, is whatever `@jterrazz/test` says it is. If `spec-file-within-line-limit` or `test-body-within-line-limit` is retired, its `off` names an owner that judges nothing, and it goes with it: a `covered` off names an owner a consumer can install today ([ADR-008](008-a-rule-stays-until-its-new-owner-ships.md)).
 - A consumer that names files `*.spec.ts` without using `@jterrazz/test` has no size cap on them at all, and one that writes `*.test.ts(x)` without it has no cap on a function there. The gap is accepted: the suffix is that framework's convention, and the rulebook does not judge one file twice to close it.
-- One finding, one section: a long spec is `@jterrazz/test`'s debt in `jterrazz.baseline.json › test`, never this package's.
+- One finding, one section: a long spec is `@jterrazz/test`'s debt in `studio.baseline.json › test`, never this package's.

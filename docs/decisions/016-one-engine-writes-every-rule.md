@@ -13,7 +13,7 @@ Two packages of the family judge their consumers with code of their own:
 this toolchain, and `@jterrazz/test`. Each grew an engine under
 `lint/engine/`, and the two engines had converged on the same parts written
 twice: the four-part lesson and its `refusal()`, the section of
-`jterrazz.baseline.json` and its exact ratchet, the git-aware walk, the
+`studio.baseline.json` and its exact ratchet, the git-aware walk, the
 workspace members, the reserved ground folders (two `ground.ts`), the
 suppression directives, the generated catalogue tables. Two copies of one
 reader answer one project two ways: the member list the ratchet counts over

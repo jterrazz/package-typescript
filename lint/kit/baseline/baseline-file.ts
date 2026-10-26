@@ -5,7 +5,7 @@ import { refusal } from '../catalogue/lesson.js';
 import { isJsonObject, objectOf } from '../project/json.js';
 import { removeLedger } from './ledger-file.js';
 
-export const BASELINE = '.jterrazz/baseline.json';
+export const BASELINE = '.studio/baseline.json';
 
 export type Counts = Record<string, number>;
 

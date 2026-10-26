@@ -96,7 +96,7 @@ describe('readArguments', () => {
             `found: \`typescript check\` has no flag -j=1 · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it: it reads --cold, --json · ${READ}`,
             ...['check', 'fix', 'baseline'].map(
                 (command) =>
-                    `found: \`typescript ${command}\` has no flag --ignore-pattern, which is retired · why: a path left out of one run is read differently by each gate: the formatter, the Markdown pass and the linter disagreed on what it covered, and 85 goldens were rewritten in one repository · fix: declare the folder in jterrazz.config.ts, where every gate reads it alike: \`typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }\` · read: docs/reference/quality-checks.md#a-root-beside-the-spine`,
+                    `found: \`typescript ${command}\` has no flag --ignore-pattern, which is retired · why: a path left out of one run is read differently by each gate: the formatter, the Markdown pass and the linter disagreed on what it covered, and 85 goldens were rewritten in one repository · fix: declare the folder in studio.config.ts, where every gate reads it alike: \`typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }\` · read: docs/reference/quality-checks.md#a-root-beside-the-spine`,
             ),
         ]);
     });

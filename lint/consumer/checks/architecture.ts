@@ -11,9 +11,9 @@ import type { ToolRun } from '../../kit/checker/tool-run.js';
 import { UNCRUISED_PATHS } from '../../kit/project/ground.js';
 import { isInert } from '../../kit/project/inert-laws.js';
 import { isJsonObject, listOf, objectOf, textOf } from '../../kit/project/json.js';
-import { DEPENDENCY_CRUISER_CONFIGS, SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import { isChapterAnchor, presetLesson } from '../../kit/project/preset.js';
 import type { ArchitectureRule } from '../../kit/project/preset.js';
+import { DEPENDENCY_CRUISER_CONFIGS, SETTINGS_FILE } from '../../kit/project/studio-config.js';
 import { hexagonalMapOf } from './architecture.hexagonal.js';
 
 const SOURCE = /\.[cm]?[jt]sx?$/u;
@@ -43,7 +43,7 @@ function isRule(value: unknown): value is ArchitectureRule {
 
 const MALFORMED_LAYERS = refusal({
     fix: "give every entry of `typescript.architecture.layers`, and of each preset's `layers`, a `name`, a `from` and a `to` object, and a `why`, a `fix` and a `read`",
-    found: 'jterrazz.config.ts holds a `layers` whose every entry is not `{ name, from, to, why, fix, read }`, `read` a chapter anchor `docs/<chapter>.md#<heading>`',
+    found: 'studio.config.ts holds a `layers` whose every entry is not `{ name, from, to, why, fix, read }`, `read` a chapter anchor `docs/<chapter>.md#<heading>`',
     read: 'docs/reference/quality-checks.md#the-architecture-layer-map-pass',
     why: 'a layer is a dependency-cruiser rule and the lesson its refusal prints, and a layer missing a part can be neither judged nor taught',
 });

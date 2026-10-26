@@ -69,7 +69,7 @@ export const SURFACES = {
     },
     baseline: {
         read: GESTURES,
-        says: "Record the debt: oxlint's in .jterrazz/oxlint-suppressions.json, the rest in .jterrazz/baseline.json",
+        says: "Record the debt: oxlint's in .studio/oxlint-suppressions.json, the rest in .studio/baseline.json",
     },
     tsc: {
         example: '--build',

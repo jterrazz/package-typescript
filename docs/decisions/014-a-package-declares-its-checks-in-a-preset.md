@@ -21,7 +21,7 @@ no entry a package could write into.
 A package hands its consumers' layers and name rules to the toolchain as a
 preset: an object carrying its `name`, its `architecture.layers` and its
 `names`, each in the vocabulary a project already writes. The project declares
-it in `jterrazz.config.ts`, under `typescript.presets`, and each pass holds the
+it in `studio.config.ts`, under `typescript.presets`, and each pass holds the
 project to its own declaration and every preset's alike. A project writes its
 own name rules under `typescript.names`, in ls-lint's `ls` and `ignore`, each
 run as one ls-lint of its own and printed at the file with its lesson.
@@ -35,7 +35,7 @@ held to is read in one file, as its oxlint fragments are read in
 - A package moves a rule the tool can express out of its own code, and keeps
   only what the tool cannot say.
 - A consumer adopting a package's preset adds one line to its
-  `jterrazz.config.ts`; until it does, the preset's rules do not run for it.
+  `studio.config.ts`; until it does, the preset's rules do not run for it.
 - One ls-lint run per name rule costs a tree walk each; the rules a package
   ships are few, and the determinism it buys is the reason: two globs matching
   one directory in one ls-lint config are judged in no stable order.

@@ -47,13 +47,13 @@ describe('originLines', () => {
             originLines(resolved).filter(({ setting }) => !setting.startsWith('law ')),
         ).toStrictEqual([
             { origin: '@acme/test preset test', setting: 'test.roots = ["specs"]' },
-            { origin: 'jterrazz.config.ts', setting: 'test.roots = ["e2e"]' },
+            { origin: 'studio.config.ts', setting: 'test.roots = ["e2e"]' },
             {
                 origin: '@jterrazz/typescript rulebook',
                 setting: 'typescript.oxlint.profile = "node"',
             },
             {
-                origin: 'jterrazz.config.ts',
+                origin: 'studio.config.ts',
                 setting: 'typescript.roots.scripts = "the release scripts"',
             },
             {
@@ -68,7 +68,7 @@ describe('originLines', () => {
                 origin: '@jterrazz/typescript src/standard/platforms/next.ts',
                 setting: 'typescript.spine = ["app"]',
             },
-            { origin: 'jterrazz.config.ts', setting: 'typescript.tool = "c"' },
+            { origin: 'studio.config.ts', setting: 'typescript.tool = "c"' },
         ]);
     });
 
@@ -106,7 +106,7 @@ describe('originLines', () => {
             { origin: '@acme/filed preset filed', setting: 'law filed/filed-law' },
             { origin: '@acme/bare preset bare', setting: 'law bare/bare-law' },
             { origin: '@acme/named preset named', setting: 'law named/named-law' },
-            { origin: 'jterrazz.config.ts', setting: 'optOut typescript/base-law = "the reason"' },
+            { origin: 'studio.config.ts', setting: 'optOut typescript/base-law = "the reason"' },
         ]);
     });
 
@@ -144,10 +144,10 @@ describe('originLines', () => {
                 derived: { test: { projects: { api: {}, unit: { roots: ['src'] } } } },
             }),
         ).toStrictEqual([
-            { origin: 'jterrazz.config.ts', setting: 'test.allow.vitest = "the runtime ships"' },
+            { origin: 'studio.config.ts', setting: 'test.allow.vitest = "the runtime ships"' },
             { origin: 'derived from the tree', setting: 'test.projects.api = {}' },
             { origin: 'derived from the tree', setting: 'test.projects.unit.roots = ["src"]' },
-            { origin: 'jterrazz.config.ts', setting: 'test.roots = ["e2e"]' },
+            { origin: 'studio.config.ts', setting: 'test.roots = ["e2e"]' },
             { origin: '@acme/test preset test', setting: 'test.words = []' },
             {
                 origin: '@acme/test preset test',
@@ -159,7 +159,7 @@ describe('originLines', () => {
                     'typescript.oxlint.overrides = [{"files":["specs/**"],"rules":{"acme/spec":"error"}}]',
             },
             {
-                origin: 'jterrazz.config.ts',
+                origin: 'studio.config.ts',
                 setting:
                     'typescript.oxlint.overrides = [{"files":["scripts/**"],"rules":{"no-console":"off"}}]',
             },

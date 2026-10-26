@@ -26,7 +26,7 @@ export function verbatimDrafts(): PrepareStep {
         mkdirSync(join(workdir, 'drafts'), { recursive: true });
         writeFileSync(join(workdir, 'drafts/note.txt'), 'kept as written\n');
         writeFileSync(
-            join(workdir, 'jterrazz.config.ts'),
+            join(workdir, 'studio.config.ts'),
             "export default { typescript: { roots: { drafts: { reason: 'notes kept as written', verbatim: true } } } };\n",
         );
     };

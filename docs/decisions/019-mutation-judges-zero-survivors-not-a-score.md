@@ -12,7 +12,7 @@ decision on 2026-10-03, and from the reading of the specs' mutants that
 
 The owner's decision of 2026-10-02 asked for mutation persisted with "a
 score ratchet in the debt ledger": `typescript mutation` held a score to a
-floor in `.jterrazz/baseline.json` that could only rise.
+floor in `.studio/baseline.json` that could only rise.
 
 The score was a number over every mutant, the ones no module test runs
 included. On this package it read 22%, and most of the mutants behind it

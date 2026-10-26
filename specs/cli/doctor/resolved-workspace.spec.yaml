@@ -7,6 +7,6 @@ runs:
            TYPESCRIPT  Checking the toolchain...
 
           {{any}}
-          Resolved packages/broken/jterrazz.config.ts
+          Resolved packages/broken/studio.config.ts
 
-            packages/broken/jterrazz.config.ts holds a `presets` that is not a list
+            packages/broken/studio.config.ts holds a `presets` that is not a list

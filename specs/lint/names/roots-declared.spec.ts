@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest';
 import { lint } from '../names-lint.specification.js';
 
 describe('roots-declared', () => {
-    test('accepts a root the tools of its platform impose or one jterrazz.config.ts declares, and refuses every other', async () => {
+    test('accepts a root the tools of its platform impose or one studio.config.ts declares, and refuses every other', async () => {
         // Given - a Next.js website holding roots Next.js and Expo impose, one the settings declare with its reason, and one nobody declares
         const result = await lint.fixture(directory('./__fixtures__/roots-declared/')).run();
 
@@ -13,35 +13,35 @@ describe('roots-declared', () => {
             android/:1:1  names(no-undeclared-root-folder)
                 found: \`android/\` is a root outside the spine
                 why: Every root folder is on the root spine, imposed by a tool, or declared with its reason.
-                fix: move it under src/, or declare it in jterrazz.config.ts's \`typescript.roots\` with its reason
+                fix: move it under src/, or declare it in studio.config.ts's \`typescript.roots\` with its reason
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine
             apps/playground/:1:1  names(declared-root-is-first-level)
-                found: \`apps/playground/\` is declared in jterrazz.config.ts's \`typescript.roots\`, and a root is a first-level folder
+                found: \`apps/playground/\` is declared in studio.config.ts's \`typescript.roots\`, and a root is a first-level folder
                 why: A root declared in typescript.roots is a first-level folder that is no folder of the spine.
                 fix: declare the first-level folder, \`apps\`, or delete the entry
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine
             deploy/:1:1  names(no-undeclared-root-folder)
                 found: \`deploy/\` is a root outside the spine
                 why: Every root folder is on the root spine, imposed by a tool, or declared with its reason.
-                fix: move it under src/, or declare it in jterrazz.config.ts's \`typescript.roots\` with its reason
+                fix: move it under src/, or declare it in studio.config.ts's \`typescript.roots\` with its reason
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine
             docker/:1:1  names(declared-root-states-its-reason)
-                found: \`docker/\` is declared in jterrazz.config.ts's \`typescript.roots\` with no reason
+                found: \`docker/\` is declared in studio.config.ts's \`typescript.roots\` with no reason
                 why: A root declared in typescript.roots states why the repository keeps it.
                 fix: say why the repository keeps it
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine
             ios/:1:1  names(no-undeclared-root-folder)
                 found: \`ios/\` is a root outside the spine
                 why: Every root folder is on the root spine, imposed by a tool, or declared with its reason.
-                fix: move it under src/, or declare it in jterrazz.config.ts's \`typescript.roots\` with its reason
+                fix: move it under src/, or declare it in studio.config.ts's \`typescript.roots\` with its reason
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine
             migrations/:1:1  names(declared-root-holds-files)
-                found: \`migrations/\` is declared in jterrazz.config.ts's \`typescript.roots\` and holds no swept file; the sweep drops what git ignores, a Go module's \`testdata/\` and the ground of a test
+                found: \`migrations/\` is declared in studio.config.ts's \`typescript.roots\` and holds no swept file; the sweep drops what git ignores, a Go module's \`testdata/\` and the ground of a test
                 why: A root declared in typescript.roots holds a file git does not ignore.
                 fix: delete the entry
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine
             src/:1:1  names(declared-root-is-first-level)
-                found: \`src/\` is declared in jterrazz.config.ts's \`typescript.roots\`, and it is a folder of the spine
+                found: \`src/\` is declared in studio.config.ts's \`typescript.roots\`, and it is a folder of the spine
                 why: A root declared in typescript.roots is a first-level folder that is no folder of the spine.
                 fix: delete the entry: a folder of the spine is already codified, and it cannot be a root too
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine

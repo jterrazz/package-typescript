@@ -22,10 +22,10 @@ describe('oxfmtConfigAt', () => {
     test('a workspace root keeps as written what each member keeps, a file a member names included, under the member’s folder', async () => {
         // Given - a workspace whose root keeps a folder and whose member keeps one file and one verbatim root
         const root = tree({
-            'apps/site/jterrazz.config.ts':
+            'apps/site/studio.config.ts':
                 "export default { kind: 'website', platform: 'react', typescript: { oxfmt: { ignore: { 'docs/upstream.md': 'quoted' } }, roots: { notes: { reason: 'scratch', verbatim: true } } } };\n",
             'apps/site/package.json': '{ "name": "site", "private": true }\n',
-            'jterrazz.config.ts':
+            'studio.config.ts':
                 "export default { typescript: { oxfmt: { ignore: { vendor: 'shipped' } } } };\n",
             'package.json': '{ "name": "ws", "private": true, "workspaces": ["apps/*"] }\n',
         });
@@ -56,7 +56,7 @@ describe('oxfmtConfigAt', () => {
     test('leaves a spec document to the document formatter of the test package', async () => {
         // Given - a plain project
         const root = tree({
-            'jterrazz.config.ts': "export default { kind: 'library', platform: 'node' };\n",
+            'studio.config.ts': "export default { kind: 'library', platform: 'node' };\n",
             'package.json': '{ "name": "plain", "version": "1.0.0" }\n',
         });
 

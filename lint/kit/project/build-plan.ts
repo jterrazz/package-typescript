@@ -12,11 +12,11 @@ import {
     outputOf,
     publishedOf,
 } from './entry-points.js';
-import { SETTINGS_FILE } from './jterrazz-config.js';
 import { withoutDotSlash } from './packed-files.js';
 import { presetLesson } from './preset.js';
 import type { Resolution } from './preset.js';
 import type { Platform, ProjectIdentity } from './project-kind.js';
+import { SETTINGS_FILE } from './studio-config.js';
 
 export { DIST } from './build-steps.js';
 export type { BuildStep } from './build-steps.js';

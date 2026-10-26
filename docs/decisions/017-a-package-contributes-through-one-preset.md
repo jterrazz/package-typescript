@@ -17,14 +17,14 @@ composed in `oxlint.config.ts`, its layers and name rules in
 in its own code, and its debt in a file of its own. The laws every
 repository keeps (the direction of `lint/`, the spine, the rosters of the
 Names pass) were not a package's contribution at all: each repository
-copied the six `lint/` layers into its own `jterrazz.config.ts`, and could
+copied the six `lint/` layers into its own `studio.config.ts`, and could
 drop one by deleting a line.
 
 ## Decision
 
 - A package declares ONE preset: its name (its section, its laws' prefix),
   the defaults of its section, its oxlint config, its layers, its name rules,
-  the sections of `jterrazz.baseline.json` it owns, and the presets it
+  the sections of `studio.baseline.json` it owns, and the presets it
   includes. `typescript.presets` is gone; `presets` is a top-level key.
 - `typescript()` is the base preset and is always on. It carries the laws
   every repository keeps; no repository copies them.
@@ -33,14 +33,14 @@ drop one by deleting a line.
   lists concatenate, records merge, a value the repository writes wins.
 - A law is set aside only in the open, under `optOuts`, with its reason, and
   the drift report counts it.
-- A package's debt is its preset's section of `jterrazz.baseline.json`,
+- A package's debt is its preset's section of `studio.baseline.json`,
   judged by the kit's one ratchet engine
   ([ADR-016](016-one-engine-writes-every-rule.md));
   `oxlint-suppressions.json` stays oxlint's own.
 
 ## Consequences
 
-- `jterrazz.config.ts` reads as the list of what a repository is held to,
+- `studio.config.ts` reads as the list of what a repository is held to,
   then what is its own; `oxlint.config.ts` composes the same presets with
   `fromPresets` and names nothing else.
 - A repository with a `lint/` tree is held to its direction with no settings

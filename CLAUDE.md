@@ -15,7 +15,7 @@ The consumer-facing corpus is `docs/` + `README.md`, mapped by `docs/README.md`.
 | a bump that lands red on a project                | `docs/guides/adopt-a-stricter-release.md`    |
 | a project taking a build before it is published   | `docs/guides/install-an-unreleased-build.md` |
 | wiring a project onto the toolchain               | `docs/start/getting-started.md`              |
-| `jterrazz.config.ts`, presets, their merge order  | `docs/reference/configuration.md`            |
+| `studio.config.ts`, presets, their merge order    | `docs/reference/configuration.md`            |
 | check / fix and their passes, the ratchet         | `docs/reference/quality-checks.md`           |
 | the rulebook, profiles, knip                      | `docs/reference/lint-presets.md`             |
 | build / start / dev / tsc                         | `docs/reference/building.md`                 |
@@ -23,7 +23,7 @@ The consumer-facing corpus is `docs/` + `README.md`, mapped by `docs/README.md`.
 
 The manual is cut by its reader's need (`start/`, `guides/`, `concepts/`, `reference/`), the shape every repository of the ecosystem keeps, and this repository's own gate refuses a tree that breaks it (`docs/reference/quality-checks.md`, the Docs (layout) pass).
 
-One Claude Code skill routes into this corpus: `skills/jterrazz-typescript/SKILL.md`. It says what to run, what each failing pass means and the page to read next. It is hand-written, it never restates a page, and the Markdown (prose) pass fails it when it names a page that does not exist.
+One Claude Code skill routes into this corpus: `skills/studio-typescript/SKILL.md`. It says what to run, what each failing pass means and the page to read next. It is hand-written, it never restates a page, and the Markdown (prose) pass fails it when it names a page that does not exist.
 
 `CLAUDE.md` at the root is a symlink to this file: one brief, two names, no second copy.
 
@@ -49,4 +49,4 @@ What each root and folder holds is [Architecture](docs/concepts/architecture.md)
 
 ## Commands and the standing rule
 
-The gestures and what each one runs are [Develop § The loop](docs/guides/develop.md#the-loop)'s, and the rule that a change to the public surface reaches three places is [Develop § What a change owes](docs/guides/develop.md#what-a-change-owes)'s. A change to a lint decision is a line of a fragment under `lint/` and nothing else, since the reference's catalogue is its projection. The repo-structure doctrine is the estate's, carried by the `jterrazz-repo-structure` skill, and never authored here.
+The gestures and what each one runs are [Develop § The loop](docs/guides/develop.md#the-loop)'s, and the rule that a change to the public surface reaches three places is [Develop § What a change owes](docs/guides/develop.md#what-a-change-owes)'s. A change to a lint decision is a line of a fragment under `lint/` and nothing else, since the reference's catalogue is its projection. The repo-structure doctrine is the estate's, carried by the `studio-repo-structure` skill, and never authored here.

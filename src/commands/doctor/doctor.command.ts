@@ -4,9 +4,9 @@ import type { OxlintConfig } from 'oxlint';
 
 import { readSettings } from '../../../lint/index.rules.js';
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
-import { SETTINGS_FILE } from '../../../lint/kit/project/jterrazz-config.js';
 import { originLines } from '../../../lint/kit/project/origins.js';
 import type { Resolved } from '../../../lint/kit/project/preset.js';
+import { SETTINGS_FILE } from '../../../lint/kit/project/studio-config.js';
 import { toolVersions } from '../../../lint/kit/project/tool-versions.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { badge, print } from '../terminal.js';

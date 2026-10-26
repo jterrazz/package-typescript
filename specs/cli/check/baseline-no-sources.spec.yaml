@@ -6,4 +6,4 @@ runs:
       stdout: |4
            TYPESCRIPT  Recording the baseline...
 
-          .jterrazz/baseline.json › typescript written: 0 finding(s) across 0 rule(s)
+          .studio/baseline.json › typescript written: 0 finding(s) across 0 rule(s)

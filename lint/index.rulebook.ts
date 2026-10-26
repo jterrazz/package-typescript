@@ -11,11 +11,11 @@ import { merge, profile } from './kit/compiler/compile.js';
 import { verbatimTreesOf } from './kit/project/byte-for-byte.js';
 import { folderPlatformsOf } from './kit/project/folder-platforms.js';
 import { objectOf } from './kit/project/json.js';
-import { readConfig, SETTINGS_FILE } from './kit/project/jterrazz-config.js';
 import { presetLesson } from './kit/project/preset.js';
 import type { Preset, Resolution } from './kit/project/preset.js';
 import type { Platform } from './kit/project/project-kind.js';
 import { projectOxlintOf } from './kit/project/project-oxlint.js';
+import { readConfig, SETTINGS_FILE } from './kit/project/studio-config.js';
 import { isMonorepoRoot, workspaceMembers } from './kit/project/workspace-members.js';
 
 const PLUGIN_PATHS: Readonly<Record<string, string>> = Object.freeze({

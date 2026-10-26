@@ -1,4 +1,4 @@
-description: keeps an entry jterrazz.config.ts names beside the toolchain's config-file entries
+description: keeps an entry studio.config.ts names beside the toolchain's config-file entries
 fixture: ./__fixtures__/knip/toolchain-config-files-with-entry/
 env: TYPESCRIPT_CHECK_PASSES=knip
 runs:

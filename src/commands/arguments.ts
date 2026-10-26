@@ -28,7 +28,7 @@ const RETIRED_IGNORE =
 function unknownFlag(name: string, flag: string, surface: Surface): string {
     if (flag === '--ignore-pattern') {
         return refusal({
-            fix: 'declare the folder in jterrazz.config.ts, where every gate reads it alike: `typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }`',
+            fix: 'declare the folder in studio.config.ts, where every gate reads it alike: `typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }`',
             found: `\`typescript ${name}\` has no flag --ignore-pattern, which is retired`,
             read: 'docs/reference/quality-checks.md#a-root-beside-the-spine',
             why: RETIRED_IGNORE,

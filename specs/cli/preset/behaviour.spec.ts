@@ -136,7 +136,7 @@ describe('behaviour', () => {
             'dir',
         );
         writeFileSync(
-            resolve(work.path, 'jterrazz.config.ts'),
+            resolve(work.path, 'studio.config.ts'),
             "import { test } from '@jterrazz/test/config';\n\nexport default { kind: 'library', platform: 'node', presets: [test()] };\n",
         );
         const config = resolve(work.path, 'oxlint.config.mjs');

@@ -1,6 +1,6 @@
 # @jterrazz/typescript
 
-The whole TypeScript toolchain of a project in one devDependency: it builds, type-checks, lints and formats, and it judges the repository's shape. A project keeps one settings file, `jterrazz.config.ts`, that says what it is; the editor files derived from it (`tsconfig.json`, `oxlint.config.ts`, `oxfmt.config.ts`), which `typescript fix` writes and `typescript check` holds to their derived content; a `Makefile` and a short manual. It runs two commands, `typescript check` and `typescript fix`. Nothing else needs configuring, and nothing needs keeping in sync between projects.
+The whole TypeScript toolchain of a project in one devDependency: it builds, type-checks, lints and formats, and it judges the repository's shape. A project keeps one settings file, `studio.config.ts`, that says what it is; the editor files derived from it (`tsconfig.json`, `oxlint.config.ts`, `oxfmt.config.ts`), which `typescript fix` writes and `typescript check` holds to their derived content; a `Makefile` and a short manual. It runs two commands, `typescript check` and `typescript fix`. Nothing else needs configuring, and nothing needs keeping in sync between projects.
 
 ## Why it exists
 
@@ -17,7 +17,7 @@ npm install @jterrazz/typescript @types/node --save-dev
 ```
 
 ```ts
-// jterrazz.config.ts
+// studio.config.ts
 import { defineConfig } from '@jterrazz/typescript/config';
 
 export default defineConfig({ kind: 'api', platform: 'node' });
@@ -36,7 +36,7 @@ Before a release is tagged, `npx typescript rehearse` runs the gate on Linux, in
 
 ## Documentation
 
-The manual lives in [`docs/`](docs/README.md), which opens on a map of its pages: a tutorial to start, guides for a task, concepts for the why, and a reference to look a pass, a rule or a setting up. The package ships it, so a project that installed the toolchain reads it at `node_modules/@jterrazz/typescript/docs/`. The [`jterrazz-typescript`](https://github.com/jterrazz/package-typescript/blob/main/skills/jterrazz-typescript/SKILL.md) Claude Code skill routes an agent into the right page. The API is the types.
+The manual lives in [`docs/`](docs/README.md), which opens on a map of its pages: a tutorial to start, guides for a task, concepts for the why, and a reference to look a pass, a rule or a setting up. The package ships it, so a project that installed the toolchain reads it at `node_modules/@jterrazz/typescript/docs/`. The [`studio-typescript`](https://github.com/jterrazz/package-typescript/blob/main/skills/studio-typescript/SKILL.md) Claude Code skill routes an agent into the right page. The API is the types.
 
 ## License
 

@@ -14,7 +14,7 @@ runs:
             docs-layout  Check a repository's docs/ against the manual's shape
             doctor       Report the installed tool versions against the declared ranges, and the file every setting comes from
             mutation     Measure the tests against mutants of the lines the change reaches (--mutate <ranges> names others)
-            baseline     Record the debt: oxlint's in .jterrazz/oxlint-suppressions.json, the rest in .jterrazz/baseline.json
+            baseline     Record the debt: oxlint's in .studio/oxlint-suppressions.json, the rest in .studio/baseline.json
             tsc          Run the TypeScript 7 compiler this package ships (emit, --build)
             check        Check types, lint, formatting, and unused code
             fix          Auto-fix lint and formatting issues
@@ -54,7 +54,7 @@ runs:
             docs-layout  Check a repository's docs/ against the manual's shape
             doctor       Report the installed tool versions against the declared ranges, and the file every setting comes from
             mutation     Measure the tests against mutants of the lines the change reaches (--mutate <ranges> names others)
-            baseline     Record the debt: oxlint's in .jterrazz/oxlint-suppressions.json, the rest in .jterrazz/baseline.json
+            baseline     Record the debt: oxlint's in .studio/oxlint-suppressions.json, the rest in .studio/baseline.json
             tsc          Run the TypeScript 7 compiler this package ships (emit, --build)
             check        Check types, lint, formatting, and unused code
             fix          Auto-fix lint and formatting issues

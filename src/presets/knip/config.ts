@@ -18,7 +18,7 @@ export const KNIP_PRESET: Readonly<Record<string, unknown>> = {
         'src/{index,cli,main}.{js,mjs,cjs,jsx,ts,tsx,mts,cts}!',
         'oxlint.config.ts',
         'oxfmt.config.ts',
-        'jterrazz.config.ts',
+        'studio.config.ts',
         'vitest.config.ts',
         // invariant: a `*.cli.ts` is a command run by its path, which no import reaches.
         // Stryker disable next-line StringLiteral: the knip pass reads this preset in a command the specs spawn, beyond what a mutant of this module reaches; specs/cli/check/knip-base-config.spec.yaml proves the entry

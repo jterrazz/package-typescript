@@ -4,7 +4,7 @@ runs:
     - command: docs-layout .
       exit: 1
       stdout: |
-          docs/README.md:1:1: error docs(map-links-only-pages): docs/README.md links ../../jterrazz-os/home/_all/doctrine.md: the map routes to its own pages and nothing else
+          docs/README.md:1:1: error docs(map-links-only-pages): docs/README.md links ../../studio-os/home/_all/doctrine.md: the map routes to its own pages and nothing else
           CLAUDE.md:1:1: error docs(brief-routes-to-the-map): CLAUDE.md does not route to docs/README.md: the brief is a map, not a manual
-          docs/README.md:1:1: error docs(no-cross-repository-link): docs/README.md links ../../jterrazz-os/home/_all/doctrine.md: another repository's tree is not a place this manual may reach
+          docs/README.md:1:1: error docs(no-cross-repository-link): docs/README.md links ../../studio-os/home/_all/doctrine.md: another repository's tree is not a place this manual may reach
           docs/concepts/architecture.md:1:1: error docs(no-cross-repository-link): docs/concepts/architecture.md links ../../../package-test/docs/README.md: another repository's tree is not a place this manual may reach

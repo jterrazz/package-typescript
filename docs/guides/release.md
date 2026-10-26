@@ -4,7 +4,7 @@ This repository ships one thing: the npm package `@jterrazz/typescript`, publish
 
 ## What a merge to `main` does
 
-Nothing that reaches a consumer. `.github/workflows/validate.yaml` runs on every push and pull request to `main` and calls the shared `jterrazz-actions` validation workflow: install, build, lint, test. A green `main` is a publishable tree, not a published one.
+Nothing that reaches a consumer. `.github/workflows/validate.yaml` runs on every push and pull request to `main` and calls the shared `studio-actions` validation workflow: install, build, lint, test. A green `main` is a publishable tree, not a published one.
 
 ## What publishes
 
@@ -37,12 +37,14 @@ One line decides it, and it is the consumer's side of the wire: **breaking means
 
 **11.0.0 is a major on the fourth and fifth rows.** A project now declares what it is, and every config follows from that declaration, so a 10.x consumer rewrites:
 
-- its `oxlint.config.ts`, which composed profiles, into a `jterrazz.config.ts` that declares its `kind` and `platform` ([Getting started](../start/getting-started.md#1-declare-what-the-project-is)); `typescript fix` then writes the derived `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json`;
+- its `oxlint.config.ts`, which composed profiles, into a `studio.config.ts` that declares its `kind` and `platform` ([Getting started](../start/getting-started.md#1-declare-what-the-project-is)); `typescript fix` then writes the derived `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json`;
 - a `knip.json` into `typescript.knip`, and a `tsdown.config.ts` into the manifest's targets or a module named for how it is loaded: `typescript bundle` is gone, and `typescript build` derives what it compiles ([Building](../reference/building.md#the-entries));
-- `jterrazz.baseline.json` and `oxlint-suppressions.json` into `.jterrazz/`, where `typescript baseline` writes them again;
+- `studio.baseline.json` and `oxlint-suppressions.json` into `.studio/`, where `typescript baseline` writes them again;
 - a Makefile chaining `@jterrazz/test`'s own check bin into `presets: [test()]`, run by `typescript check`, `fix` and `baseline`;
 - a `typescript.generated` key, which 11.0.0 removed, into `typescript.roots.<folder>` written `{ reason, verbatim: true }`; the file now fails at load on a key no release reads ([Adopt a stricter release](adopt-a-stricter-release.md#what-a-major-newly-judges-said-once));
 - each published entry's source onto [the entry grammar](../reference/quality-checks.md#the-entry-grammar), `index[.<subpath>].ts` and `<name>.bin.ts`.
+
+**12.0.0 is a major on the fifth row, and on nothing else.** The ecosystem's substrate is named `studio` now, and `jterrazz` names only its owner, so the toolchain's own files follow: an 11.x consumer renames `jterrazz.config.ts` to `studio.config.ts` and the `.jterrazz/` folder to `.studio/`, and changes no line inside either. The skill is `studio-typescript`. The rulebook's plugin keeps its name, `jterrazz-typescript`, since it is the package's, and so does every suppression that names one of its rules.
 
 The GitHub Release of each version is where its notes live; this section keeps only what makes a version major.
 

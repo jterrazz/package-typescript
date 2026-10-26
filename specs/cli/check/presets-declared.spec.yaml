@@ -1,4 +1,4 @@
-description: holds the project to the layers and name rules of the presets its jterrazz.config.ts declares
+description: holds the project to the layers and name rules of the presets its studio.config.ts declares
 fixture: ./__fixtures__/presets/declared/
 env: TYPESCRIPT_CHECK_PASSES=architecture,names
 runs:
@@ -10,14 +10,14 @@ runs:
            RUN  Architecture (layer map)
 
           src/__tests__/widget.test.ts:1:23: error architecture(no-test-to-test-import): found: `src/__tests__/widget.test.ts` imports `src/__tests__/other.test.ts` · why: a test importing a test couples two files that each prove one thing · fix: move what both tests read into a module neither of them is · read: docs/testing.md#sharing
-          found: every finding above, and .jterrazz/baseline.json records no `architecture/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-jterrazzbaselinejson-still-holds
+          found: every finding above, and .studio/baseline.json records no `architecture/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-studiobaselinejson-still-holds
           ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Names (tree)
 
           specs/notes.ts:1:1: error names(specs-root-holds-specifications): found: `specs/notes.ts` breaks ls-lint's `.*: exists:0` · why: the specs root holds its specifications and their runners alone · fix: move it into the specification that reads it · read: docs/testing.md#the-specs-root
           src/orderLine.ts:1:1: error names(module-in-kebab-case): found: `src/orderLine.ts` breaks ls-lint's `.ts: kebabcase` · why: one case for every module keeps a search to one spelling · fix: rename it in kebab-case · read: docs/naming.md#modules
-          found: every finding above, and .jterrazz/baseline.json records no `names/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-jterrazzbaselinejson-still-holds
+          found: every finding above, and .studio/baseline.json records no `names/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-studiobaselinejson-still-holds
           ✗ Failed with exit code 1 ({{duration}})
 
            END  Finalizing quality checks

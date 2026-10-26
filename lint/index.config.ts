@@ -28,7 +28,7 @@ export type ArchitectureSettings = {
 
 type Reasoned = Readonly<Record<string, string>>;
 
-/** The `typescript` section of `jterrazz.config.ts`: every setting the toolchain's tools read, each with its reason. */
+/** The `typescript` section of `studio.config.ts`: every setting the toolchain's tools read, each with its reason. */
 export type TypescriptSettings = {
     architecture?: ArchitectureSettings;
     /** What knip cannot trace, each path or name mapped to the reason it is named. */
@@ -92,7 +92,7 @@ export type TypescriptLaws = {
     words?: Readonly<Record<string, readonly string[]>>;
 };
 
-/** A package's standard: the defaults of the sections `jterrazz.config.ts` writes, and the laws it holds every project to, as data only. */
+/** A package's standard: the defaults of the sections `studio.config.ts` writes, and the laws it holds every project to, as data only. */
 export type Standard = Omit<JterrazzConfig, 'optOuts' | 'presets' | 'typescript'> & {
     /** The laws a project sets aside by name, as `<preset>/<law>`, under `optOuts`. */
     laws?: { layers?: readonly ArchitectureRule[]; names?: readonly NamesRule[] };

@@ -51,7 +51,7 @@ writeFileSync(
     `${JSON.stringify({ devDependencies: { '@jterrazz/typescript': '*' }, name: 'strict-consumer', private: true, type: 'module', version: '1.0.0' }, null, 4)}\n`,
 );
 writeFileSync(
-    join(root, 'jterrazz.config.ts'),
+    join(root, 'studio.config.ts'),
     "export default { kind: 'api', platform: 'node' };\n",
 );
 writeFileSync(
