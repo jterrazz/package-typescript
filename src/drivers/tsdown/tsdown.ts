@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { inScratch } from '../../../lint/kit/checker/ending.js';
 import { ARTIFACTS } from '../../../lint/kit/project/build-plan.js';
 import type { BuildStep } from '../../../lint/kit/project/build-plan.js';
+import { NEVER_BUNDLED_SOURCE } from '../../../lint/kit/project/build-steps.js';
 import { binaryIn } from '../../../lint/kit/project/package-root.js';
 import { handOver, run } from '../run.js';
 
@@ -64,7 +65,8 @@ const QUIET_GENERATOR = `const logger = { error: console.error, info() {}, warn(
 
 /** The config tsdown is handed: the steps, each one's declarations emitted by the compiler on its scoped tsconfig. */
 export function tsdownConfig(steps: readonly TsdownStep[]): string {
-    return `${QUIET_GENERATOR}const steps = ${JSON.stringify(steps, null, 4)};\nexport default steps.map((step) => (step.dts === false ? step : { ...step, dts: { ...step.dts, logger } }));\n`;
+    // outside: tsdown matches a string it never bundles against the whole specifier, so a subpath (`@jterrazz/typescript/config`) would be bundled; the names reach it as one matcher.
+    return `${QUIET_GENERATOR}${NEVER_BUNDLED_SOURCE}\nconst steps = ${JSON.stringify(steps, null, 4)};\nexport default steps.map(({ deps, ...step }) => ({\n    ...step,\n    ...(deps === undefined ? {} : { deps: { neverBundle: neverBundled(deps.neverBundle) } }),\n    ...(step.dts === false ? {} : { dts: { ...step.dts, logger } }),\n}));\n`;
 }
 
 function written(

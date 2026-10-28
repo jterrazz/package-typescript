@@ -318,6 +318,7 @@ describe('build-plan', () => {
             },
             main: './dist/index.js',
             name: 'extension',
+            private: true,
         });
 
         // Then - every step leaves the two hosts out of the bundle and resolves the real package

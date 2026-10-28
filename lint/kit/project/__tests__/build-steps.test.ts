@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { shapeOf } from '../build-steps.js';
+import { neverBundled, shapeOf } from '../build-steps.js';
 
 function projectWith(manifest: object): string {
     const root = mkdtempSync(join(tmpdir(), 'build-steps-'));
@@ -29,13 +29,54 @@ describe('build-steps', () => {
         });
 
         // Then - every host module of the four fields and the scoped one, sorted; the one with a package of its own left to the bundler
-        expect(shapeOf(root, { kind: 'library', platform: 'node' }).external).toStrictEqual([
+        expect(shapeOf(root, { kind: 'api', platform: 'node' }).external).toStrictEqual([
             '@scope/pkg',
             'optional',
             'peer',
             'vscode',
             'zed',
         ]);
+    });
+
+    test('shapeOf — a published library leaves external every package it holds as a devDependency alone, and a private library or an application bundles them', () => {
+        // Given - a manifest holding a preset's toolchain as a devDependency alone, and as devDependencies too a runtime package, an optional one, a peer and the types of a package it holds
+        const manifest = {
+            dependencies: { runtime: '1' },
+            devDependencies: {
+                '@scope/toolchain': '1',
+                '@types/runtime': '1',
+                optional: '1',
+                peer: '1',
+                runtime: '1',
+            },
+            optionalDependencies: { optional: '1' },
+            peerDependencies: { peer: '1' },
+        };
+        const published = projectWith({ name: 'x', ...manifest });
+        const unpublished = projectWith({ private: true, ...manifest });
+
+        // Then - only the published library names the toolchain; what it ships tsdown leaves external already, and a types package is no module
+        expect([
+            shapeOf(published, { kind: 'library', platform: 'node' }).external,
+            shapeOf(unpublished, { kind: 'library', platform: 'node' }).external,
+            shapeOf(published, { kind: 'api', platform: 'node' }).external,
+        ]).toStrictEqual([['@scope/toolchain'], [], []]);
+    });
+
+    test('neverBundled — matches a name and its subpaths, never another package that shares its prefix', () => {
+        // Given - the matcher of a scoped package and a plain one
+        const external = neverBundled(['@scope/toolchain', 'plain']);
+
+        // Then - each package and a subpath are external, a longer name and another package are not
+        expect(
+            [
+                '@scope/toolchain',
+                '@scope/toolchain/config',
+                '@scope/toolchain-extra',
+                'plain',
+                'other',
+            ].map(external),
+        ).toStrictEqual([true, true, false, true, false]);
     });
 
     test('shapeOf — a private library or cli emits no declaration, and a public one, an application and an undeclared project do', () => {

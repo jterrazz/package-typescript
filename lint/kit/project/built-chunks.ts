@@ -2,6 +2,7 @@ import { dirname, join, relative } from 'node:path';
 
 import { DIST } from './build-plan.js';
 import type { BuildStep } from './build-plan.js';
+import { neverBundled } from './build-steps.js';
 
 const BUILD_DIRECTORY = /^(?:\.\/)?dist\//u;
 
@@ -16,8 +17,12 @@ export async function builtChunks(root: string, build: Build): Promise<BuiltChun
     const { build: tsdown } = await import('tsdown');
     const chunks: BuiltChunk[] = [];
     for (const step of build.steps.filter(({ outDir }) => outDir === DIST)) {
+        const { deps, ...rest } = step;
         await tsdown({
-            ...step,
+            ...rest,
+            ...(deps === undefined
+                ? {}
+                : { deps: { neverBundle: neverBundled(deps.neverBundle) } }),
             attw: false,
             clean: false,
             config: false,

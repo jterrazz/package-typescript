@@ -125,4 +125,44 @@ process.stdout.write(JSON.stringify([{ ...steps[0], dts }, steps[1]]));`,
             ],
         });
     });
+
+    test('tsdownConfig — hands tsdown the names a step never bundles as one matcher, which leaves their subpaths out too', () => {
+        // Given - a step that never bundles one package
+        const folder = mkdtempSync(join(tmpdir(), 'tsdown-config-'));
+        const config = join(folder, 'tsdown.config.mjs');
+        writeFileSync(
+            config,
+            tsdownConfig([
+                {
+                    clean: true,
+                    deps: { neverBundle: ['@scope/toolchain'] },
+                    dts: false,
+                    entry: { index: 'src/index.ts' },
+                    fixedExtension: false,
+                    format: ['esm'],
+                    hash: false,
+                    outDir: 'dist',
+                    outputOptions: { chunkFileNames: 'shared-[name].js' },
+                    platform: 'node',
+                    sourcemap: true,
+                },
+            ]),
+        );
+
+        // When - a process loads it as tsdown does and asks the matcher about three specifiers
+        const loaded = spawnSync(
+            process.execPath,
+            [
+                '--input-type=module',
+                '--eval',
+                `const { default: [step] } = await import(${JSON.stringify(config)});
+process.stdout.write(JSON.stringify(['@scope/toolchain', '@scope/toolchain/config', '@scope/toolchain-extra'].map(step.deps.neverBundle)));`,
+            ],
+            { encoding: 'utf8' },
+        );
+        rmSync(folder, { force: true, recursive: true });
+
+        // Then - the package and its subpath are left out, a longer name is bundled
+        expect(JSON.parse(loaded.stdout)).toStrictEqual([true, true, false]);
+    });
 });

@@ -78,7 +78,7 @@ describe('publish-guard', () => {
     });
 
     test('names a test package compiled into a shipped chunk and one it imports undeclared, and judges no chunk `files` leaves out', async () => {
-        // Given - a library bundling @vitest/spy though it declares it and ms, importing vitest/config undeclared, @vitest/mocker declared, playwright as a peer and node:path, its second chunk compiled from a fixtures module and left out of `files`
+        // Given - a library bundling @vitest/spy, which it declares nowhere, holding ms as a devDependency, importing vitest/config undeclared, @vitest/mocker declared, playwright as a peer and node:path, its second chunk compiled from a fixtures module and left out of `files`
         const result = await publish
             .fixture(directory('./__fixtures__/publish/test-packages/'))
             .link('@jterrazz/test')
@@ -96,7 +96,7 @@ describe('publish-guard', () => {
     });
 
     test('judges every chunk of a package that names no `files`, since npm then ships them all', async () => {
-        // Given - the same library, its manifest naming no `files`
+        // Given - the same library, its manifest naming no `files` and holding @vitest/spy as a devDependency, which the build leaves to the consumer
         const result = await publish
             .fixture(directory('./__fixtures__/publish/test-packages/'))
             .fixture(directory('./__fixtures__/publish/test-packages-unfiled/'))
@@ -105,13 +105,13 @@ describe('publish-guard', () => {
             .link('ms')
             .exec('check');
 
-        // Then - the guard judges the second chunk too, on the fixtures module it is compiled from
+        // Then - the guard judges the second chunk too, on the fixtures module it is compiled from, and names @vitest/spy as an import, a devDependency it no longer compiles in
         expect(
             publishPass(result.stdout.text).filter((line) =>
                 line.includes('(no-test-code-in-production)'),
             ),
         ).toStrictEqual([
-            "dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js is compiled from @vitest/spy, a test package · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/24-linting.md#no-test-code-in-production",
+            'dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js imports @vitest/spy, a test package · why: a published build never carries test material · fix: cut the import, or declare @vitest/spy in "dependencies" when the product runs it · read: @jterrazz/test\'s docs/24-linting.md#no-test-code-in-production',
             'dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js imports vitest/config, a test package · why: a published build never carries test material · fix: cut the import, or declare vitest in "dependencies" when the product runs it · read: @jterrazz/test\'s docs/24-linting.md#no-test-code-in-production',
             "dist/testing.global-setup.js:1:1: error publish(no-test-code-in-production): found: dist/testing.global-setup.js is compiled from src/orders.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/24-linting.md#no-test-code-in-production",
         ]);

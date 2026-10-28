@@ -12,7 +12,6 @@
         "@vitest/mocker": "*"
     },
     "devDependencies": {
-        "@vitest/spy": "*",
         "ms": "*"
     },
     "peerDependencies": {

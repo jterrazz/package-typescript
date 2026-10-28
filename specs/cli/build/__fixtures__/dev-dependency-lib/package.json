@@ -1,0 +1,10 @@
+{
+    "name": "dev-dependency-lib",
+    "version": "1.0.0",
+    "type": "module",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "devDependencies": {
+        "toolchain": "1.0.0"
+    }
+}

@@ -66,6 +66,16 @@ export const stepOf = (
 
 export type Shape = { dts: boolean; external: string[] };
 
+/** Whether tsdown leaves a specifier to the importer: one of the names, or a subpath of one. */
+export const neverBundled =
+    (names: readonly string[]) =>
+    (id: string): boolean =>
+        names.some((name) => id === name || id.startsWith(`${name}/`));
+
+/** The same matcher as the text of a module tsdown loads: the build hands tsdown a generated config file. */
+export const NEVER_BUNDLED_SOURCE =
+    "const neverBundled = (names) => (id) => names.some((name) => id === name || id.startsWith(name + '/'));";
+
 const HASHBANG = '#!/usr/bin/env node';
 
 const DEPENDENCY_FIELDS = [
@@ -89,6 +99,19 @@ function hostModulesOf(manifest: JsonObject): string[] {
         })
         .filter((name) => !held.has(name))
         .toSorted();
+}
+
+const SHIPPED_FIELDS = ['dependencies', 'optionalDependencies', 'peerDependencies'];
+
+// invariant: a published library's devDependencies are its consumer's: an entry that imports one (a preset reading the toolchain) runs only where the consumer installed it, so the build leaves it external. Declaring it a peer instead, even an optional one, makes npm count it production in every consumer that also installs it, which ships that consumer's whole toolchain in its production tree.
+function consumerModulesOf(manifest: JsonObject): string[] {
+    const shipped = new Set(
+        SHIPPED_FIELDS.flatMap((field) => Object.keys(objectOf(manifest[field]))),
+    );
+
+    return Object.keys(objectOf(manifest.devDependencies)).filter(
+        (name) => !shipped.has(name) && !name.startsWith('@types/'),
+    );
 }
 
 function dependsOnAny(workspace: string, members: readonly string[], name: string): boolean {
@@ -120,7 +143,13 @@ export function shapeOf(root: string, declaration: null | ProjectIdentity): Shap
         ['cli', 'library'].includes(kind) &&
         !isReadBySibling(root, manifest.name);
 
-    return { dts: !unread, external: hostModulesOf(manifest) };
+    const published = manifest.private !== true && kind === 'library';
+    const external = new Set([
+        ...hostModulesOf(manifest),
+        ...(published ? consumerModulesOf(manifest) : []),
+    ]);
+
+    return { dts: !unread, external: [...external].toSorted() };
 }
 
 const lacksHashbang = (root: string, source: string): boolean => {
