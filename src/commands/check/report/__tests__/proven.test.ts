@@ -13,7 +13,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, onTestFinished, test } from 'vitest';
+import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
 import { parsedObject } from '../../../../../lint/kit/project/json.js';
 import { VERDICT_FILE } from '../gate-verdict.js';
@@ -239,6 +239,31 @@ describe('proven', () => {
         // Then - the hit wrote the verdict back, and each other key ran
         expect(replayed).toMatchObject({ command: 'check', status: 0 });
         expect(run.ran).toBe(3);
+    });
+
+    test('provenRun — a proof names the GitHub run that took it, and a hit on a runner is its cached line', async () => {
+        // Given - a stage proven green by run 4077 on a runner, and one proven on a laptop
+        const [runner, laptop] = [repository(), repository()];
+        const host = { ...HOST, environment: { GITHUB_ACTIONS: 'true', GITHUB_RUN_ID: '4077' } };
+        const run = stage();
+        await provenRun(runner, ASKED, run.run, host);
+        await provenRun(laptop, ASKED, run.run, HOST);
+
+        // When - the runner's stage runs again
+        const write = vi.spyOn(process.stdout, 'write').mockReturnValue(true);
+        await provenRun(runner, ASKED, run.run, host);
+        const chunks = write.mock.calls.map(([chunk]) => String(chunk));
+        vi.restoreAllMocks();
+
+        // Then - each proof holds its run or none, and the hit printed the stage cached by that run
+        const runs = [runner, laptop].map((root) => {
+            const [name = ''] = readdirSync(join(root, PROVEN_FOLDER));
+
+            return parsedObject(readFileSync(join(root, PROVEN_FOLDER, name), 'utf8')).run;
+        });
+        expect(runs).toStrictEqual(['4077', null]);
+        expect(run.ran).toBe(2);
+        expect(chunks[1]).toMatch(/^tests {9}✓ cached · \d{2}:\d{2} UTC · run 4077\n$/u);
     });
 
     test('provenRun — keeps the last eight proofs of a stage, the oldest removed first', async () => {

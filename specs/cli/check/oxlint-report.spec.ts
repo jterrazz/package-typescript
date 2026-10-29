@@ -42,7 +42,12 @@ function timeless(text: string): string {
     return text.replaceAll(/Finished in \d+(?:ms|\.\d+s)/gu, 'Finished in <time>');
 }
 
+// invariant: on a GitHub runner the pass's report is the body of its fold, between the line that stops workflow commands and the token that resumes them.
 function oxlintPassOf(stdout: string): string {
+    const folded = /::stop-commands::(?<token>\S+)\n(?<body>[\s\S]*?)::\k<token>::\n/u.exec(stdout);
+    if (folded?.groups?.body !== undefined) {
+        return folded.groups.body;
+    }
     const opened = stdout.slice(stdout.indexOf('Oxlint Check\n\n') + 'Oxlint Check\n\n'.length);
 
     return opened.slice(0, opened.lastIndexOf('\n', opened.indexOf('✗ Failed with exit code')) + 1);
@@ -68,7 +73,7 @@ describe('oxlint-report', () => {
         {
             form: { GITHUB_ACTIONS: 'true' },
             marker: '::error file=shapes.ts,',
-            name: 'workflow commands, on a GitHub runner',
+            name: "workflow commands, on a GitHub runner, held inert in the pass's fold",
         },
     ])('prints what oxlint prints, in the form it picks — $name', async ({ form, marker }) => {
         // Given - a project whose one file breaks a rule of every frame shape, and oxlint's own report on it

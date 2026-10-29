@@ -22,7 +22,9 @@ import { isJsonObject, parsedObject } from '../../../../lint/kit/project/json.js
 import type { JsonObject } from '../../../../lint/kit/project/json.js';
 import { chromiumBuilds } from '../../doctor/browsers.js';
 import { badge, GREEN, print, RESET } from '../../terminal.js';
+import { ciCachedPrinted } from './ci-cached.js';
 import { headOf, VERDICT_FILE } from './gate-verdict.js';
+import { onGitHub } from './workflow-commands.js';
 
 /** Where a green verdict is kept, one file per stage and key, from the project's root. */
 export const PROVEN_FOLDER = `${ARTIFACTS}/proven`;
@@ -81,6 +83,7 @@ type Proof = {
     at: string;
     inputs: Inputs;
     key: string;
+    run: null | string;
     stage: ProvenStage;
     verdict: JsonObject | null;
     where: string;
@@ -203,11 +206,13 @@ function proofOf(project: string, stage: ProvenStage, inputs: Inputs): Proof | u
         return undefined;
     }
     const proof = parsedObject(readFileSync(file, 'utf8'));
-    const { at, verdict, where } = proof;
+    const { at, where } = proof;
     const same = JSON.stringify(proof.inputs) === JSON.stringify(inputs);
+    const run = typeof proof.run === 'string' ? proof.run : null;
+    const verdict = isJsonObject(proof.verdict) ? proof.verdict : null;
 
     return same && typeof at === 'string' && typeof where === 'string'
-        ? { at, inputs, key, stage, verdict: isJsonObject(verdict) ? verdict : null, where }
+        ? { at, inputs, key, run, stage, verdict, where }
         : undefined;
 }
 
@@ -239,7 +244,7 @@ function recorded(project: string, proof: Proof): void {
     pruned(project, proof.stage);
 }
 
-function replayed(project: string, proof: Proof, verdict: boolean): void {
+function replayed(project: string, proof: Proof, verdict: boolean, host: Host): void {
     if (verdict && proof.verdict !== null) {
         const file = join(project, VERDICT_FILE);
         mkdirSync(dirname(file), { recursive: true });
@@ -248,9 +253,13 @@ function replayed(project: string, proof: Proof, verdict: boolean): void {
             `${JSON.stringify({ ...proof.verdict, head: headOf(project) }, null, 4)}\n`,
         );
     }
-    print(
-        `${badge('TYPESCRIPT')} ${GREEN}✓ Proven green: this tree passed \`typescript ${proof.stage}\` at ${proof.at} on ${proof.where}, and no input of its key changed since (${PROVEN_FOLDER}/${proof.stage}-${proof.key.slice(0, 12)}…); nothing ran, and --cold runs it again${RESET}\n`,
-    );
+    if (onGitHub(host.environment)) {
+        ciCachedPrinted({ ...proof, passes: proof.verdict?.passes }, project, host.environment);
+    } else {
+        print(
+            `${badge('TYPESCRIPT')} ${GREEN}✓ Proven green: this tree passed \`typescript ${proof.stage}\` at ${proof.at} on ${proof.where}, and no input of its key changed since (${PROVEN_FOLDER}/${proof.stage}-${proof.key.slice(0, 12)}…); nothing ran, and --cold runs it again${RESET}\n`,
+        );
+    }
 }
 
 /** Runs a stage unless a green verdict holds for exactly its inputs; a run that ends green on a tree it did not change is kept as that proof, a red one never. `verdict` names a stage that leaves `.artifacts/gate/verdict.json`, which a proof carries and a hit writes again. */
@@ -263,7 +272,7 @@ export async function provenRun(
     const before = inputsOf(project, asked, host);
     const proof = before === undefined || cold ? undefined : proofOf(project, asked.stage, before);
     if (proof !== undefined) {
-        replayed(project, proof, verdict);
+        replayed(project, proof, verdict, host);
 
         return 0;
     }
@@ -277,6 +286,7 @@ export async function provenRun(
             at: new Date().toISOString(),
             inputs: before,
             key: keyOf(before),
+            run: host.environment.GITHUB_RUN_ID ?? null,
             stage: asked.stage,
             verdict: verdict ? verdictRead(project) : null,
             where: `${hostname()} (${project})`,

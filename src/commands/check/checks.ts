@@ -19,6 +19,8 @@ import { argumentsOf, membersOf, targetsOf, toolConfigs, toolsOf } from './passe
 import type { Check } from './passes/setup.js';
 import { started } from './passes/started.js';
 import type { Started } from './passes/started.js';
+import { ciConcluded, ciDriftPrinted, ciPassPrinted, ciPlaceOf } from './report/ci-report.js';
+import type { CiRow } from './report/ci-report.js';
 import {
     checkSummaryOf,
     checkVerdictOf,
@@ -39,6 +41,7 @@ import {
     settledLint,
 } from './report/verdicts.js';
 import type { Verdict } from './report/verdicts.js';
+import { onGitHub } from './report/workflow-commands.js';
 
 type Reported = Verdict & { label: string };
 
@@ -169,21 +172,38 @@ async function reported(
     ];
 }
 
-async function drift(run: Check): Promise<PassVerdict[]> {
+async function drift(run: Check, ci: boolean): Promise<PassVerdict[]> {
     if (run.fix || !run.selected('drift')) {
         return [];
     }
-    print(`\n${badge('DRIFT')} Deviations from the profile\n\n`);
+    print(
+        ci
+            ? '::group::drift (profile report)\n'
+            : `\n${badge('DRIFT')} Deviations from the profile\n\n`,
+    );
     const from = performance.now();
     // Stryker disable next-line StringLiteral: the checker resolves an empty root to the working directory, which '.' names
     const status = await checker('drift', ['.', ...run.driftArgs], 'inherit');
+    const verdict = driftPassOf(status, secondsSince(from));
+    if (ci) {
+        print('::endgroup::\n');
+    }
 
-    return [driftPassOf(status, secondsSince(from))];
+    return [verdict];
 }
 
-function concluded(fix: boolean, passes: readonly PassVerdict[]): number {
+function concluded(
+    fix: boolean,
+    passes: readonly PassVerdict[],
+    rows: readonly CiRow[] | undefined,
+): number {
     const verdict = checkVerdictOf(process.cwd(), { fix, passes });
     verdictWritten(process.cwd(), verdict);
+    if (rows !== undefined) {
+        ciConcluded(fix ? 'fix' : 'check', rows, ciPlaceOf(process.cwd(), process.env));
+
+        return verdict.status;
+    }
     print(
         `\n${badge('END')} ${fix ? 'Finalizing quality fixes' : 'Finalizing quality checks'}\n\n`,
     );
@@ -221,8 +241,11 @@ async function checksRun(
         process.cwd(),
         async () =>
             await inScratch(async (scratch) => {
+                const ci = onGitHub(process.env);
                 print(
-                    `${badge('START')} ${fix ? 'Running quality fixes' : 'Running quality checks'}\n`,
+                    ci
+                        ? `▸ typescript ${fix ? 'fix' : 'check'}\n`
+                        : `${badge('START')} ${fix ? 'Running quality fixes' : 'Running quality checks'}\n`,
                 );
                 const prepared = await preparedCheck(args, fix, selected, scratch);
                 const config = timedLaunch(configPass(prepared));
@@ -232,15 +255,24 @@ async function checksRun(
                 const run = await withTargets(derived);
                 const passes = await started(run, config);
                 const verdicts = await reported(run, passes, presets);
+                const rows: CiRow[] = [];
                 for (const verdict of verdicts) {
-                    reportPass(run.logs, verdict);
+                    if (ci) {
+                        rows.push(ciPassPrinted(run.logs, verdict));
+                    } else {
+                        reportPass(run.logs, verdict);
+                    }
                 }
-                const drifted = await drift(run);
+                const drifted = await drift(run, ci);
 
-                return concluded(fix, [
-                    ...verdicts.map((verdict) => passVerdictOf(verdict, run.logs.read)),
-                    ...drifted,
-                ]);
+                return concluded(
+                    fix,
+                    [
+                        ...verdicts.map((verdict) => passVerdictOf(verdict, run.logs.read)),
+                        ...drifted,
+                    ],
+                    ci ? [...rows, ...drifted.map((pass) => ciDriftPrinted(pass))] : undefined,
+                );
             }),
     );
 }

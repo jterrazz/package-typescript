@@ -47,10 +47,10 @@ export type GateVerdict = {
 };
 
 // outside: a GitHub runner reads a tool's finding as a workflow command, `::error file=...,title=<rule>::<message>`, its values percent-escaped.
-const WORKFLOW_COMMAND =
+export const WORKFLOW_COMMAND =
     /^::(?<severity>error|notice|warning)(?<properties>(?: [^:]*)?)::(?<message>.*)/u;
 
-const unescaped = (text: string): string =>
+export const unescaped = (text: string): string =>
     text.replaceAll(/%(?:0A|0D|25|2C|3A)/gu, (code) => decodeURIComponent(code));
 
 const TITLE = /[ ,]title=(?<title>[^,]*)/u;
