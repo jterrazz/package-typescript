@@ -12,6 +12,33 @@ A finding the toolchain writes is one line in the compiler's convention, `path:l
 
 The toolchain measures from the nearest `package.json`: a workspace root runs each per-package pass once per member, and a single-package project is the same run it always was.
 
+### On a GitHub runner
+
+Where `GITHUB_ACTIONS=true`, the variable GitHub sets on every step of a job, `check` and `fix` print for the job's log rather than a terminal ([ADR-041](../decisions/041-a-gate-on-a-github-runner-reports-in-githubs-own-forms.md)). Nothing they decide changes, only how they say it:
+
+```text
+▸ typescript check
+::group::types         ✗ 2 errors · 4.2s
+types.ts(1,7): error TS2322: Type 'number' is not assignable to type 'string'.
+...
+::endgroup::
+lint          ✓ 3.1s
+config        ✓ 0.2s
+
+error typescript(TS2322)  packages/api/types.ts:1:7
+  Type 'number' is not assignable to type 'string'.
+
+::error file=packages/api/types.ts,line=1,col=7,title=typescript(TS2322)::Type 'number' is not assignable to type 'string'.
+✗ 3 passes, 1 failed: types
+```
+
+- **One line per pass**, aligned: its short name (`types`, `lint`, `format`, `unused`, `config`, `docs`, `names`, ... the first word of the label otherwise), `✓` or `✗` with the number of findings, then its seconds. A pass that printed something is a fold (`::group::`) titled by that line, its raw log inside, so the log closes up to the list of passes; GitHub reads no workflow command inside the fold, so a tool's own annotations (oxlint prints them on a runner) are never shown twice.
+- **Each finding over its lines**, after the passes: the rule and the place, then what was found in one sentence, then `fix` and `read`. The `why` of a lesson stays in the pass's fold, and in the terminal's line. The toolchain's own lines, the compiler's, oxlint's, knip's and oxfmt's lists are read this way; a failing pass whose log names no finding is one, its first line.
+- **One annotation per finding**, `::error file=<path>,line=<n>,col=<n>,title=<rule>::<what was found>` (`::warning` for a warning), so GitHub shows it on the line of the pull request and lists it on the run. The path is read from `GITHUB_WORKSPACE`, the checkout GitHub annotates, so a member of a monorepo or a project in a subfolder points at the right file; a finding with no place carries its title alone. Values are escaped as GitHub's workflow commands require: `%`, CR and LF everywhere, `:` and `,` in a property as well.
+- **The step summary**: where `GITHUB_STEP_SUMMARY` names a file, the run appends a Markdown table of its passes (pass, result, seconds or cached), then its findings, the first twenty listed and the rest counted (`- … and 12 more`), which the job's summary page shows.
+
+The last line counts the passes and names the failed ones; the verdict file and the exit code are the same as anywhere else. A tree [proven green](#a-tree-proven-green) prints a line per pass its proof's verdict names, each `✓ cached · 22:16 UTC · run 40778644382`: the minute the proof was taken (its date too when it is not today's) and the GitHub run that took it, where a run did. The runner's hostname, its checkout path and the full timestamp stay out of the log. Outside a runner every run prints as above.
+
 ### The verdict file
 
 `check`, `fix` and `mutation` each end on one line that names the verdict, and leave it as JSON in `.artifacts/gate/verdict.json`, so a reader (a person, an agent, a script) never searches a log for it. The line is the run's last: `✓ All checks passed`, or `✗ Some checks failed, first <pass>: <its first finding>`; for mutation, `✓ Mutation passed: 9 detected, 0 surviving, 0 never judged, over HEAD..working tree`, or `✗ Mutation failed: first survivor src/discount.ts:2 ConditionalExpression; ...`. Its numbers are the verdict's own, never a count Stryker printed on the way.
@@ -75,7 +102,7 @@ A green `check`, `test` or `mutation` is kept as a proof, and the same stage on 
 - the variables that change what a stage decides: `CI`, `GITHUB_ACTIONS`, `NODE_ENV`, `NODE_OPTIONS`, `PLAYWRIGHT_BROWSERS_PATH`, `TEST_UPDATE` and `TZ`;
 - the stage, its arguments, and what else it reads: the passes `check` runs, the tree of the commit `mutation` measures the change against, whether `--since`, `TYPESCRIPT_MUTATION_SINCE` or the merge-base names it, and the tree of the commit `test` selects its files against.
 
-A hit prints one line and exits `0`: ``✓ Proven green: this tree passed `typescript check` at <when> on <host> (<checkout>), and no input of its key changed since (.artifacts/proven/check-<key>…); nothing ran, and --cold runs it again``. `check` and `mutation` write the verdict their green left to `.artifacts/gate/verdict.json` again, under the commit the checkout now stands on. `typescript test` runs the project's own `test` script over the test files the change reaches ([below](#the-test-files-a-change-reaches)), so a `Makefile` whose `test` recipe calls it has its tests answered the same way ([Getting started](../start/getting-started.md#4-answer-the-six-gestures-in-a-makefile)).
+A hit prints one line and exits `0`: ``✓ Proven green: this tree passed `typescript check` at <when> on <host> (<checkout>), and no input of its key changed since (.artifacts/proven/check-<key>…); nothing ran, and --cold runs it again``; on a GitHub runner, a cached line per pass instead, naming the run that took the proof ([On a GitHub runner](#on-a-github-runner)). `check` and `mutation` write the verdict their green left to `.artifacts/gate/verdict.json` again, under the commit the checkout now stands on. `typescript test` runs the project's own `test` script over the test files the change reaches ([below](#the-test-files-a-change-reaches)), so a `Makefile` whose `test` recipe calls it has its tests answered the same way ([Getting started](../start/getting-started.md#4-answer-the-six-gestures-in-a-makefile)).
 
 A red is never kept, and neither is a green whose run changed its own tree, such as a golden `TEST_UPDATE=1` rewrote: the key is taken before the run and again after it, and the proof is kept only when both agree. Outside a repository nothing is proven, and every run runs. `--cold` runs the stage whatever proof it holds, and keeps the green it ends on; `check --json` always runs, since a proof keeps the verdict, not the drift report.
 
@@ -102,7 +129,7 @@ Every test file runs, the line saying why (`ran every test file: <why>`), where 
 
 Any other flag, or one given twice, is refused before a pass starts, and `--help` prints the command's usage and runs nothing ([Commands § Flags and help](commands.md#flags-and-help)).
 
-Every command exits `0` when it succeeded and non-zero otherwise; `check` and `fix` exit `1` when any pass failed or the drift report refused. CI runs `make check` and reads that code, and on a GitHub runner oxlint prints its diagnostics as workflow annotations ([One run, printed as oxlint prints it](#one-run-printed-as-oxlint-prints-it)).
+Every command exits `0` when it succeeded and non-zero otherwise; `check` and `fix` exit `1` when any pass failed or the drift report refused. CI runs `make check` and reads that code; on a GitHub runner the run prints a line per pass, an annotation per finding and a step summary ([On a GitHub runner](#on-a-github-runner)).
 
 A runner owes Node 24 and the install the lockfile describes, nothing more: the TypeScript 7 compiler arrives as the optional package of the runner's own platform, and the Secrets pass runs `gitleaks` only where it finds one on `PATH`, falling back to its own patterns. The repositories of the family call the shared `jterrazz/studio-actions` validate workflow, which runs `make build`, `make lint` and `make test` on Node 24; a project outside the family writes the same in a few lines:
 
@@ -367,7 +394,7 @@ A config handed by path resolves its `ignorePatterns` against its own directory,
 
 ### One run, printed as oxlint prints it
 
-`check` runs the type-aware linter once, and what a failing pass prints is oxlint's own output, in the form oxlint picks for the environment: one line per diagnostic under an AI agent, GitHub workflow commands on a GitHub runner, the framed report anywhere else, in colour where `CI` or `FORCE_COLOR` asks for it. The toolchain draws nothing of its own: the type-aware run is the costliest process of a check, and a second run, or a renderer re-drawing a JSON report, would only repeat what oxlint already says. The run's verdict is oxlint's exit code, the suppressions file included ([the ratchet](#the-ratchet)); the pass adds a line only where oxlint's own words would send a reader astray, such as a config it could not load, or a help naming a bare `oxlint --suppress-all`.
+`check` runs the type-aware linter once, and what a failing pass prints is oxlint's own output, in the form oxlint picks for the environment: one line per diagnostic under an AI agent, GitHub workflow commands on a GitHub runner, the framed report anywhere else, in colour where `CI` or `FORCE_COLOR` asks for it. The toolchain runs nothing of its own: the type-aware run is the costliest process of a check, and a second run, or a renderer re-drawing a JSON report, would only repeat what oxlint already says. On a GitHub runner the report goes in the pass's fold, and its workflow commands are read back as the run's findings ([On a GitHub runner](#on-a-github-runner)). The run's verdict is oxlint's exit code, the suppressions file included ([the ratchet](#the-ratchet)); the pass adds a line only where oxlint's own words would send a reader astray, such as a config it could not load, or a help naming a bare `oxlint --suppress-all`.
 
 A preset's checks read no oxlint report: a plugin's `jterrazz(*)` rules are oxlint rules like any other, printed and held here.
 

@@ -32,6 +32,8 @@ A project carries `"type": "module"` in its `package.json`. In a git repository 
 
 A green `check` is kept for the content it ran on, so the same tree, install and toolchain check again in a second; `typescript test` and `typescript mutation` keep theirs the same way ([Quality checks](docs/reference/quality-checks.md#a-tree-proven-green)), and `typescript test` runs only the test files the change reaches ([Quality checks](docs/reference/quality-checks.md#the-test-files-a-change-reaches)).
 
+On a GitHub runner, `check` prints one line per pass, folds each raw log, annotates each finding on its line and appends a table of its passes to the job's summary ([Quality checks](docs/reference/quality-checks.md#on-a-github-runner)).
+
 Before a release is tagged, `npx typescript rehearse` runs the gate on Linux, in Docker, on a fresh clone of the branch, as the GitHub runner that publishes it will ([Commands](docs/reference/commands.md#a-rehearsal-on-linux)).
 
 ## Documentation
