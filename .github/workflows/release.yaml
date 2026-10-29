@@ -1,16 +1,17 @@
-name: Release
+name: Publish
+run-name: Publish ${{ github.event.release.tag_name }}
 
+# outside: the file keeps the name `release.yaml`: npm's trusted publishing for this package is
+# configured against that filename on npmjs.com, so the rename to publish.yaml waits for the owner.
 on:
     release:
         types: [created]
 
-permissions:
-    contents: read
-    id-token: write
-
 jobs:
-    release:
-        uses: jterrazz/studio-actions/.github/workflows/release-npm.yaml@main
-        with:
-            node-version: '24'
-        secrets: inherit
+    publish:
+        name: Publish
+        # invariant: npm's trusted publishing and provenance both take this OIDC token; no token is stored.
+        permissions:
+            contents: read
+            id-token: write
+        uses: jterrazz/studio-actions/.github/workflows/publish-npm.yaml@main

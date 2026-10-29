@@ -131,14 +131,14 @@ Any other flag, or one given twice, is refused before a pass starts, and `--help
 
 Every command exits `0` when it succeeded and non-zero otherwise; `check` and `fix` exit `1` when any pass failed or the drift report refused. CI runs `make check` and reads that code; on a GitHub runner the run prints a line per pass, an annotation per finding and a step summary ([On a GitHub runner](#on-a-github-runner)).
 
-A runner owes Node 24 and the install the lockfile describes, nothing more: the TypeScript 7 compiler arrives as the optional package of the runner's own platform, and the Secrets pass runs `gitleaks` only where it finds one on `PATH`, falling back to its own patterns. The repositories of the family call the shared `jterrazz/studio-actions` validate workflow, which runs `make build`, `make lint` and `make test` on Node 24; a project outside the family writes the same in a few lines:
+A runner owes Node 24 and the install the lockfile describes, nothing more: the TypeScript 7 compiler arrives as the optional package of the runner's own platform, and the Secrets pass runs `gitleaks` only where it finds one on `PATH`, falling back to its own patterns. The repositories of the family call the shared `jterrazz/studio-actions` Check workflow, which runs `make build`, `make lint` and `make test` on Node 24; a project outside the family writes the same in a few lines:
 
 ```yaml
-# .github/workflows/validate.yaml
-name: Validate
+# .github/workflows/check.yaml
+name: Check
 on: [push, pull_request]
 jobs:
-    validate:
+    check:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4

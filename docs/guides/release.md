@@ -4,11 +4,11 @@ This repository ships one thing: the npm package `@jterrazz/typescript`, publish
 
 ## What a merge to `main` does
 
-Nothing that reaches a consumer. `.github/workflows/validate.yaml` runs on every push and pull request to `main` and calls the shared `studio-actions` validation workflow: install, build, lint, test. A green `main` is a publishable tree, not a published one.
+Nothing that reaches a consumer. `.github/workflows/check.yaml` runs on every push and pull request to `main` and calls the shared `studio-actions` Check workflow: install, build, lint, test. A green `main` is a publishable tree, not a published one.
 
 ## What publishes
 
-`.github/workflows/release.yaml` fires on `release: created` and calls the shared `release-npm.yaml` workflow with npm provenance (`id-token: write`). So exactly one gesture publishes, and a human makes it: cutting a GitHub Release.
+`.github/workflows/release.yaml` fires on `release: created` and calls the shared `publish-npm.yaml` workflow with npm provenance (`id-token: write`). So exactly one gesture publishes, and a human makes it: cutting a GitHub Release.
 
 The sequence, in order:
 
@@ -54,5 +54,5 @@ What the ratchet changes is not that rule but the SHAPE of absorbing it: a repos
 
 ## Related
 
-- [Test](https://github.com/jterrazz/package-typescript/blob/main/docs/guides/test.md): what `validate.yaml` runs.
+- [Test](https://github.com/jterrazz/package-typescript/blob/main/docs/guides/test.md): what `check.yaml` runs.
 - [Adopt a stricter release](adopt-a-stricter-release.md): the consumer's side of a bump.
