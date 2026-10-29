@@ -7,6 +7,7 @@ import { describe, expect, test } from 'vitest';
 import manifest from '../../../package.json' with { type: 'json' };
 import { temporaryDirectory } from '../../__setup__/temporary-directory.js';
 import { onlyPasses } from '../__setup__/check-passes.js';
+import { terminalEnvironment } from '../__setup__/oxlint-forms.js';
 import { toolchainWith } from '../__setup__/toolchain-sandbox.js';
 import { cli } from '../cli.specification.js';
 
@@ -104,6 +105,7 @@ describe('drift', () => {
         const result = spawnSync('node', [join(toolchain, 'dist/typescript.js'), 'check'], {
             cwd: project,
             encoding: 'utf8',
+            env: terminalEnvironment(),
         });
         const drift = result.stdout.slice(result.stdout.indexOf('Deviations from the profile'));
 
@@ -134,6 +136,7 @@ describe('drift', () => {
             spawnSync('node', [join(toolchain, 'dist/typescript.js'), 'check', ...flags], {
                 cwd: project,
                 encoding: 'utf8',
+                env: terminalEnvironment(),
             }).stdout;
         const human = run();
         const machine = run('--json');
@@ -183,6 +186,7 @@ describe('drift', () => {
             {
                 cwd: project,
                 encoding: 'utf8',
+                env: terminalEnvironment(),
             },
         );
         const start = result.stdout.indexOf('Deviations from the profile');

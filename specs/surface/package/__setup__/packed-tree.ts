@@ -113,6 +113,8 @@ export async function checkOutcome(
 ): Promise<Outcome> {
     const base = { ...process.env };
     delete base.TYPESCRIPT_CHECK_PASSES;
+    // invariant: the outcome is read from the terminal's report, which a GitHub job's `GITHUB_ACTIONS=true` replaces.
+    delete base.GITHUB_ACTIONS;
     const child = spawn(process.execPath, [bin, 'check', ...args], {
         cwd: project,
         env: { ...base, ...env },
