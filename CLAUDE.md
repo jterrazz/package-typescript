@@ -25,8 +25,6 @@ The manual is cut by its reader's need (`start/`, `guides/`, `concepts/`, `refer
 
 One Claude Code skill routes into this corpus: `skills/studio-typescript/SKILL.md`. It says what to run, what each failing pass means and the page to read next. It is hand-written, it never restates a page, and the Markdown (prose) pass fails it when it names a page that does not exist.
 
-`CLAUDE.md` at the root is a symlink to this file: one brief, two names, no second copy.
-
 ## Setup
 
 ```bash
