@@ -267,7 +267,7 @@ describe('docs.decisions', () => {
         expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decision-listed-in-the-map']);
         expect(violationOf(tree, 'docs/decision-listed-in-the-map')).toStrictEqual({
             message:
-                'docs/decisions/README.md is an index, and an index is a copy; the queue is derived (terra <brand> decisions)',
+                'docs/decisions/README.md is an index, and an index is a copy; the queue is derived (studio <brand> decisions)',
             path: 'docs/decisions/README.md',
         });
     });

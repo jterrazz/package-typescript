@@ -12,7 +12,7 @@ Nothing that reaches a consumer. `.github/workflows/check.yaml` runs on every pu
 
 The sequence, in order:
 
-1. the change merges to `main` and validates green;
+1. the change merges to `main` and its Check run is green;
 2. a `chore(release): X.Y.Z` commit lands on `main`, bumping `version` in `package.json` and the lockfile, and nothing else;
 3. `make rehearse` runs the gate on that commit as the runner will, on Linux ([A rehearsal on Linux](../reference/commands.md#a-rehearsal-on-linux)), and exits 0;
 4. the owner tags `vX.Y.Z` and creates the GitHub Release;

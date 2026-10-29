@@ -145,7 +145,7 @@ export function auditDecisions(
         report(
             'docs/decision-listed-in-the-map',
             'docs/decisions/README.md',
-            'docs/decisions/README.md is an index, and an index is a copy; the queue is derived (terra <brand> decisions)',
+            'docs/decisions/README.md is an index, and an index is a copy; the queue is derived (studio <brand> decisions)',
         );
     }
 

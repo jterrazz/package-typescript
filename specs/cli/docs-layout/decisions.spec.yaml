@@ -8,5 +8,5 @@ runs:
           docs/decisions/001-the-same-call.md:1:1: error docs(decision-status-known): docs/decisions/001-the-same-call.md: **Status:** is none of Proposed, Accepted, Superseded by [ADR-NNN](file.md), Deprecated
           docs/decisions/002-the-second-call.md:1:1: error docs(decision-heading-carries-its-number): docs/decisions/002-the-second-call.md opens on # The second call: the mold is "# ADR-002: Title"
           docs/decisions/:1:1: error docs(decision-number-unique): ADR-001 is claimed by 001-the-first-call.md and 001-the-same-call.md
-          docs/decisions/README.md:1:1: error docs(decision-listed-in-the-map): docs/decisions/README.md is an index, and an index is a copy; the queue is derived (terra <brand> decisions)
+          docs/decisions/README.md:1:1: error docs(decision-listed-in-the-map): docs/decisions/README.md is an index, and an index is a copy; the queue is derived (studio <brand> decisions)
           docs/decisions/_template.md:1:1: error docs(decision-template-present): docs/decisions/_template.md is missing: the mold sits where the record is written
