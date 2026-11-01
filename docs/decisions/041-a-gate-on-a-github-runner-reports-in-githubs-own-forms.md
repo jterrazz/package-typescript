@@ -1,7 +1,9 @@
 # ADR-041: A gate on a GitHub runner reports in GitHub's own forms
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-29
+
+The owner accepted it on 2026-11-01 ("ok").
 
 ## Context
 

@@ -1,7 +1,9 @@
 # ADR-040: A published library leaves its devDependencies to its consumer
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-28
+
+The owner accepted it on 2026-11-01 ("ok").
 
 ## Context
 
