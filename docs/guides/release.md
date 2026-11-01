@@ -8,7 +8,7 @@ Nothing that reaches a consumer. `.github/workflows/check.yaml` runs on every pu
 
 ## What publishes
 
-`.github/workflows/release.yaml` fires on `release: created` and calls the shared `publish-npm.yaml` workflow with npm provenance (`id-token: write`). So exactly one gesture publishes, and a human makes it: cutting a GitHub Release.
+`.github/workflows/publish.yaml` fires on `release: created` and calls the shared `publish-npm.yaml` workflow with npm provenance (`id-token: write`). So exactly one gesture publishes, and a human makes it: cutting a GitHub Release.
 
 The sequence, in order:
 

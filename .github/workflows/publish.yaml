@@ -1,8 +1,8 @@
 name: Publish
 run-name: Publish ${{ github.event.release.tag_name }}
 
-# outside: the file keeps the name `release.yaml`: npm's trusted publishing for this package is
-# configured against that filename on npmjs.com, so the rename to publish.yaml waits for the owner.
+# outside: npm's trusted publishing names this file (publish.yaml) on npmjs.com: renaming it
+# stops publishing until the trusted publisher names the new file.
 on:
     release:
         types: [created]
