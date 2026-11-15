@@ -1,5 +1,5 @@
 import { headline } from './headline.js';
-import { shared } from '../common/shared.js';
+import { shared } from '../../kit/shared.js';
 import { quizOf } from '../quiz/sheet.js';
 
 export function card(id: string): string {

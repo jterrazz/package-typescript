@@ -5,7 +5,7 @@ import { lint } from '../architecture-lint.specification.js';
 
 describe('declared', () => {
     test('fails the hexagonal map and a layer of its own at each import, type-only ones included, and lets the entry and a spec runner reach the composition root', async () => {
-        // Given - the hexagonal map and a layer of its own, crossed by value and type-only imports, each layer reaching what it may, the composition root reached by the entry, a spec runner and two modules that may not
+        // Given - the hexagonal map and a layer of its own, crossed by value and type-only imports, each layer reaching what it may, the composition root reached by the entry, a spec runner and two modules that may not, a feature reaching the kit and the kit reaching a feature
         const result = await lint.fixture(directory('./__fixtures__/declared/')).run();
 
         // Then - each finding at its position, with its lesson
@@ -42,8 +42,13 @@ describe('declared', () => {
                 read: docs/reference/quality-checks.md#the-hexagonal-map
             src/presentation/features/articles/card.ts:3:24  architecture(hexagonal-feature-is-independent)
                 found: \`src/presentation/features/articles/card.ts\` imports \`src/presentation/features/quiz/sheet.ts\`
-                why: a feature is independent: shared code lives in features/common
-                fix: move what two features share into \`presentation/features/common/\`
+                why: a feature is independent: what features share lives in presentation/kit
+                fix: move what two features share into \`presentation/kit/\`
+                read: docs/reference/quality-checks.md#the-hexagonal-map
+            src/presentation/kit/stamp.ts:1:24  architecture(hexagonal-kit-knows-no-feature)
+                found: \`src/presentation/kit/stamp.ts\` imports \`src/presentation/features/quiz/sheet.ts\`
+                why: the kit holds what features share, so it depends on none of them
+                fix: take what the feature knows as an argument, or move the brick into the feature
                 read: docs/reference/quality-checks.md#the-hexagonal-map
         `);
     });

@@ -590,7 +590,7 @@ A package that ships layers for its consumers hands them in its preset, and a pr
 
 ### The hexagonal map
 
-`hexagonal: true` adds the map this package ships, eight boundaries whose arrow points inward. A tree laid out as a hexagonal application (`src/` holding `domain/`, `application/` and `infrastructure/`) is held to it without writing it, and `typescript doctor` shows it `derived from the tree`; one that is not hexagonal for all that writes `hexagonal: false`:
+`hexagonal: true` adds the map this package ships, nine boundaries whose arrow points inward. A tree laid out as a hexagonal application (`src/` holding `domain/`, `application/` and `infrastructure/`) is held to it without writing it, and `typescript doctor` shows it `derived from the tree`; one that is not hexagonal for all that writes `hexagonal: false`:
 
 - `domain/` imports no other layer.
 - `application/use-cases/` and `application/ports/` reach the domain and the ports, never an implementation.
@@ -598,11 +598,12 @@ A package that ships layers for its consumers hands them in its preset, and a pr
 - `composition/` is imported by the app's entry and by a `specs/**/*.specification.ts` runner, and by nothing else. The entry is the declared platform's: `src/index` for `node` and `bun` (and for a project that declares no platform), the root layout `app/_layout` for `expo`, `app/layout` or `pages/_app` for `next`, `src/main` or `src/index` for `react`, and `src/middleware` for `astro`, each also under `src/` where the framework allows it.
 - `infrastructure/inbound/` reaches an outbound adapter through injection, not by import.
 - `presentation/ui/atoms/` and `molecules/` stay clear of navigation.
-- `presentation/features/<feature>/` reaches no other feature, except `features/common/`.
+- `presentation/features/<feature>/` reaches no other feature: what features share sits in `presentation/kit/`, beside `features/`.
+- `presentation/kit/` imports no feature.
 
 No boundary reads a module test as an importer: a file under `__tests__/`, at any depth, may wire a fake adapter or the composition root to test its module. A layer a project declares itself spares what its own `from` spares.
 
-Why the two `composition/` boundaries hold, and how the entry and a runner build the app through it, are [The composition root](../concepts/the-composition-root.md)'s. Each folder matches at any depth of the unit, and a workspace member laid out as a hexagonal application is held to the map by its own run, from the root. The eight are `hexagonalRules(platform)` in `lint/consumer/checks/architecture.hexagonal.ts`, each with its why and its fix, the entries by platform its `COMPOSITION_ENTRIES`.
+Why the two `composition/` boundaries hold, and how the entry and a runner build the app through it, are [The composition root](../concepts/the-composition-root.md)'s. Each folder matches at any depth of the unit, and a workspace member laid out as a hexagonal application is held to the map by its own run, from the root. The nine are `hexagonalRules(platform)` in `lint/consumer/checks/architecture.hexagonal.ts`, each with its why and its fix, the entries by platform its `COMPOSITION_ENTRIES`.
 
 ### What the pass needs from the tree
 

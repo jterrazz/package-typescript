@@ -90,15 +90,23 @@ const ARCHITECTURE_HEXAGONAL: readonly ArchitectureRule[] = Object.freeze([
         why: 'an atom and a molecule are pure, and navigation is a feature concern',
     },
     {
-        fix: 'move what two features share into `presentation/features/common/`',
+        fix: 'move what two features share into `presentation/kit/`',
         from: { path: `${ANY_DEPTH}presentation/features/([^/]+)/` },
         name: 'hexagonal-feature-is-independent',
         read: READ,
         to: {
             path: `${ANY_DEPTH}presentation/features/`,
-            pathNot: `${ANY_DEPTH}presentation/features/(common|$2)/`,
+            pathNot: `${ANY_DEPTH}presentation/features/$2/`,
         },
-        why: 'a feature is independent: shared code lives in features/common',
+        why: 'a feature is independent: what features share lives in presentation/kit',
+    },
+    {
+        fix: 'take what the feature knows as an argument, or move the brick into the feature',
+        from: { path: `${ANY_DEPTH}presentation/kit/` },
+        name: 'hexagonal-kit-knows-no-feature',
+        read: READ,
+        to: { path: `${ANY_DEPTH}presentation/features/` },
+        why: 'the kit holds what features share, so it depends on none of them',
     },
 ]);
 

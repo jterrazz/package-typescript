@@ -57,9 +57,11 @@ describe('architecture.hexagonal', () => {
                 '`composition/` is the one layer that builds an implementation and hands it to the application',
             'hexagonal-domain-is-pure': 'the domain layer is pure: it imports no other layer',
             'hexagonal-feature-is-independent':
-                'a feature is independent: shared code lives in features/common',
+                'a feature is independent: what features share lives in presentation/kit',
             'hexagonal-inbound-injects-outbound':
                 'an inbound adapter reaches an outbound one through injection, not by import',
+            'hexagonal-kit-knows-no-feature':
+                'the kit holds what features share, so it depends on none of them',
             'hexagonal-port-knows-no-implementation':
                 'a port is an interface: it cannot depend on what implements it',
             'hexagonal-ui-stays-pure':
