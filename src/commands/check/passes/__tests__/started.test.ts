@@ -17,15 +17,16 @@ const pending = (): { release: () => void; writer: Launched } => {
 
 describe('started', () => {
     test('writersOf — the writing passes of a fix, in the order the formatter waits for them, and the absent ones kept as absent', () => {
-        // Given - eight passes, two of them not selected
-        const one = launched('architecture', Promise.resolve(0));
+        // Given - eight passes, two of them not selected, the architecture run once per unit
+        const one = launched('architecture-root', Promise.resolve(0));
+        const member = launched('architecture-apps-web', Promise.resolve(0));
         const two = launched('comments', Promise.resolve(0));
         const three = launched('names', Promise.resolve(0));
 
-        // Then - the eight places, in the alphabet of the launch
+        // Then - each unit's run, then the other places, in the alphabet of the launch
         expect(
             writersOf({
-                architecture: one,
+                architecture: [one, member],
                 astro: undefined,
                 comments: two,
                 config: undefined,
@@ -34,7 +35,17 @@ describe('started', () => {
                 names: three,
                 suppressions: undefined,
             }),
-        ).toStrictEqual([one, undefined, two, undefined, undefined, undefined, three, undefined]);
+        ).toStrictEqual([
+            one,
+            member,
+            undefined,
+            two,
+            undefined,
+            undefined,
+            undefined,
+            three,
+            undefined,
+        ]);
     });
 
     test('writersDone — ends once every writer has ended, a failed one and an absent one included, and not before', async () => {

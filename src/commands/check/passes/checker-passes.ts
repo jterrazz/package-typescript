@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import process from 'node:process';
+import { join } from 'node:path';
 
 import { isCommentedElsewhere } from '../../../../lint/kit/project/comments.js';
 import { isFileOnDisk } from '../../../../lint/kit/project/fs-cache.js';
@@ -133,28 +133,25 @@ export function namesPass(check: Check): Launched | undefined {
     };
 }
 
-export function architecturePass(check: Check): Launched | undefined {
-    // invariant: a tree laid out as a hexagonal application is held to the hexagonal map, with or without a settings file.
-    if (
-        !check.selected('architecture') ||
-        !(
-            [SETTINGS_FILE, ...DEPENDENCY_CRUISER_CONFIGS].some((name) => isFileOnDisk(name)) ||
-            laidOutHexagonally(process.cwd())
-        )
-    ) {
-        return undefined;
-    }
-    const log = check.logs.at('architecture.log');
+// invariant: a unit laid out as a hexagonal application is held to the hexagonal map, with or without a settings file.
+export const cruisesArchitecture = (unit: string): boolean =>
+    [SETTINGS_FILE, ...DEPENDENCY_CRUISER_CONFIGS].some((name) => isFileOnDisk(join(unit, name))) ||
+    laidOutHexagonally(unit);
 
-    return {
-        log,
-        status: checker(
-            'architecture',
-            ['.', '--depcruise', check.tools.depcruise, ...(check.fix ? ['--fix'] : [])],
-            { path: log },
-            { typeless: true },
-        ),
-    };
+export function architecturePasses(check: Check): Launched[] {
+    if (!check.selected('architecture')) {
+        return [];
+    }
+    const units = ['.', ...check.members].filter((unit) => cruisesArchitecture(unit));
+
+    return units.map((unit) => {
+        const log = check.logs.at(
+            `architecture-${unit === '.' ? 'root' : unit.replaceAll('/', '-')}.log`,
+        );
+        const args = [unit, '--depcruise', check.tools.depcruise, ...(check.fix ? ['--fix'] : [])];
+
+        return { log, status: checker('architecture', args, { path: log }, { typeless: true }) };
+    });
 }
 
 export function publishPasses(check: Check): Launched[] {

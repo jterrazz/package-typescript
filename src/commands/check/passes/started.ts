@@ -1,5 +1,5 @@
 import {
-    architecturePass,
+    architecturePasses,
     commentsPass,
     docsPass,
     gitignorePass,
@@ -25,7 +25,7 @@ import {
 } from './tool-passes.js';
 
 export type Started = {
-    architecture: TimedLaunch | undefined;
+    architecture: TimedLaunch[];
     astro: TimedLaunch | undefined;
     comments: TimedLaunch | undefined;
     config: TimedLaunch | undefined;
@@ -65,7 +65,7 @@ export const writersOf = (
         | 'suppressions'
     >,
 ): (TimedLaunch | undefined)[] => [
-    passes.architecture,
+    ...passes.architecture,
     passes.astro,
     passes.comments,
     passes.config,
@@ -118,7 +118,7 @@ export async function started(check: Check, config: TimedLaunch | undefined): Pr
     const names = timedLaunch(namesPass(check));
     const secrets = timedLaunch(secretsPass(check));
     const astro = timedLaunch(astroPass(check));
-    const architecture = timedLaunch(architecturePass(check));
+    const architecture = timedLaunches(architecturePasses(check));
     const publish = timedLaunches(publishPasses(check));
     // Stryker disable next-line ObjectLiteral: the formatter waiting for no writer lays its text down after theirs in every run a spec can stage, an order between processes that is no value to read
     const writing = writersOf({

@@ -39,6 +39,7 @@ import {
     publishVerdict,
     settled,
     settledLint,
+    unitsVerdict,
 } from './report/verdicts.js';
 import type { Verdict } from './report/verdicts.js';
 import { onGitHub } from './report/workflow-commands.js';
@@ -121,35 +122,24 @@ async function reported(
     const config = await settled(passes.config);
     const typescript = await settled(passes.typescript);
     const linted = await settledLint(run, passes);
-    const [
-        names,
-        format,
-        knip,
-        gitignore,
-        docs,
-        suppressions,
-        comments,
-        markdown,
-        architecture,
-        astro,
-        secrets,
-    ] = await Promise.all(
-        [
-            passes.names,
-            passes.format,
-            passes.knip,
-            passes.gitignore,
-            passes.docs,
-            passes.suppressions,
-            passes.comments,
-            passes.markdown,
-            passes.architecture,
-            passes.astro,
-            passes.secrets,
-        ].map(async (launched) => await settled(launched)),
-    );
+    const [names, format, knip, gitignore, docs, suppressions, comments, markdown, astro, secrets] =
+        await Promise.all(
+            [
+                passes.names,
+                passes.format,
+                passes.knip,
+                passes.gitignore,
+                passes.docs,
+                passes.suppressions,
+                passes.comments,
+                passes.markdown,
+                passes.astro,
+                passes.secrets,
+            ].map(async (launched) => await settled(launched)),
+        );
     const contributed = await presetVerdicts(run, presets);
     const publish = await publishVerdict(run, passes.publish);
+    const architecture = await unitsVerdict(run, 'architecture', passes.architecture);
     const { fix, selected } = run;
 
     return [

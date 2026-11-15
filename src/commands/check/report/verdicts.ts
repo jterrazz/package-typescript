@@ -119,7 +119,12 @@ export async function presetVerdicts(
     );
 }
 
-export async function publishVerdict(check: Check, runs: readonly TimedLaunch[]): Promise<Passed> {
+/** One verdict over a pass run once per unit: every unit's log in one, failed when any run did. */
+export async function unitsVerdict(
+    check: Check,
+    name: string,
+    runs: readonly TimedLaunch[],
+): Promise<Passed> {
     if (runs.length === 0) {
         return undefined;
     }
@@ -130,7 +135,7 @@ export async function publishVerdict(check: Check, runs: readonly TimedLaunch[])
         })),
     );
     const statuses = outcomes.map(({ status }) => status);
-    const log = check.logs.at('publish.log');
+    const log = check.logs.at(`${name}.log`);
     joined(
         check.logs,
         log,
@@ -141,8 +146,13 @@ export async function publishVerdict(check: Check, runs: readonly TimedLaunch[])
         log,
         seconds: slowestOf(outcomes),
         status: statuses.some((status) => status !== 0) ? 1 : 0,
-        writes: true,
     };
+}
+
+export async function publishVerdict(check: Check, runs: readonly TimedLaunch[]): Promise<Passed> {
+    const verdict = await unitsVerdict(check, 'publish', runs);
+
+    return verdict === undefined ? undefined : { ...verdict, writes: true };
 }
 
 export function lintVerdictOf(

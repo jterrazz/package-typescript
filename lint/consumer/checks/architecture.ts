@@ -8,13 +8,14 @@ import { defineCheck } from '../../kit/catalogue/rule.js';
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
 import { runTool } from '../../kit/checker/tool-run.js';
 import type { ToolRun } from '../../kit/checker/tool-run.js';
-import { UNCRUISED_PATHS } from '../../kit/project/ground.js';
 import { isInert } from '../../kit/project/inert-laws.js';
 import { isJsonObject, listOf, objectOf, textOf } from '../../kit/project/json.js';
 import { isChapterAnchor, presetLesson } from '../../kit/project/preset.js';
 import type { ArchitectureRule } from '../../kit/project/preset.js';
 import { DEPENDENCY_CRUISER_CONFIGS, SETTINGS_FILE } from '../../kit/project/studio-config.js';
+import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import { hexagonalMapOf } from './architecture.hexagonal.js';
+import { uncruisedOf, unitPrefixOf } from './architecture.units.js';
 
 const SOURCE = /\.[cm]?[jt]sx?$/u;
 
@@ -48,7 +49,7 @@ const MALFORMED_LAYERS = refusal({
     why: 'a layer is a dependency-cruiser rule and the lesson its refusal prints, and a layer missing a part can be neither judged nor taught',
 });
 
-async function declaredRules(context: Context): Promise<Declared> {
+async function declaredRules(context: Context, members: readonly string[]): Promise<Declared> {
     const { problem, resolved } = await context.config();
     if (problem !== null) {
         return {
@@ -62,7 +63,8 @@ async function declaredRules(context: Context): Promise<Declared> {
         return { problem: MALFORMED_LAYERS };
     }
     const architecture = objectOf(objectOf(resolved.sections.typescript).architecture);
-    const holds = (folder: string): boolean => context.exists(join(context.root, folder));
+    const holds = (folder: string): boolean =>
+        !members.includes(folder) && context.exists(join(context.root, folder));
 
     return {
         problem: null,
@@ -76,7 +78,11 @@ async function declaredRules(context: Context): Promise<Declared> {
     };
 }
 
-function cruiseConfig(rules: readonly ArchitectureRule[], context: Context): unknown {
+function cruiseConfig(
+    rules: readonly ArchitectureRule[],
+    context: Context,
+    members: readonly string[],
+): unknown {
     const own = DEPENDENCY_CRUISER_CONFIGS.find((name) => context.exists(join(context.root, name)));
 
     return {
@@ -84,7 +90,7 @@ function cruiseConfig(rules: readonly ArchitectureRule[], context: Context): unk
         forbidden: rules.map(({ from, name, to }) => ({ from, name, severity: 'error', to })),
         options: {
             doNotFollow: { path: 'node_modules' },
-            exclude: { path: UNCRUISED_PATHS },
+            exclude: { path: uncruisedOf(members) },
             enhancedResolveOptions: {
                 conditionNames: ['import', 'require', 'node', 'default', 'types'],
                 exportsFields: ['exports'],
@@ -97,10 +103,11 @@ function cruiseConfig(rules: readonly ArchitectureRule[], context: Context): unk
     };
 }
 
-function cruisedRoots(context: Context): string[] {
+function cruisedRoots(context: Context, members: readonly string[]): string[] {
     const folders = context
         .files()
         .filter((path) => SOURCE.test(path) && path.includes('/'))
+        .filter((path) => !members.some((member) => path.startsWith(`${member}/`)))
         .map((path) => path.slice(0, path.indexOf('/')))
         .filter((folder) => !folder.startsWith('.'));
 
@@ -178,10 +185,12 @@ function findingOf(
     });
     // Stryker disable next-line StringLiteral: a text that names no specifier puts the finding at the top of the file, as no text does
     const text = context.read(join(context.root, from)) ?? '';
+    const unit = unitPrefixOf(context.root);
+    const target = context.exists(join(context.root, to)) ? `${unit}${to}` : to;
 
     return check.finding(
-        { ...positionOf(text, specifier), path: from },
-        { fix: lesson?.fix ?? OWN_FIX, found: `\`${from}\` imports \`${to}\`` },
+        { ...positionOf(text, specifier), path: `${unit}${from}` },
+        { fix: lesson?.fix ?? OWN_FIX, found: `\`${unit}${from}\` imports \`${target}\`` },
     );
 }
 
@@ -203,16 +212,18 @@ function unreportedOf({ output, ran, status }: ToolRun): null | string {
 function cruised(
     context: Context,
     rules: readonly ArchitectureRule[],
+    members: readonly string[],
 ): { findings: Finding[]; problem: null | string } {
-    const roots = cruisedRoots(context);
+    const roots = cruisedRoots(context, members);
+    // invariant: a workspace root whose code all sits in its members has nothing of its own to cruise, and each member's run judges the member.
     if (roots.length === 0) {
-        return { findings: [], problem: UNCRUISED };
+        return { findings: [], problem: members.length > 0 ? null : UNCRUISED };
     }
     const scratch = mkdtempSync(join(tmpdir(), 'typescript-architecture-'));
     try {
         const config = join(scratch, 'dependency-cruiser.json');
         const cruise = join(scratch, 'cruise.json');
-        writeFileSync(config, JSON.stringify(cruiseConfig(rules, context)));
+        writeFileSync(config, JSON.stringify(cruiseConfig(rules, context, members)));
         const run = runTool(
             'dependency-cruiser',
             context.value('--depcruise', 'depcruise'),
@@ -251,7 +262,8 @@ function cruised(
 
 export const architecture: Pass = Object.freeze({
     async check(context) {
-        const declared = await declaredRules(context);
+        const members = workspaceMembers(context.root);
+        const declared = await declaredRules(context, members);
         if (declared.problem !== null) {
             return { failed: true, lines: [declared.problem] };
         }
@@ -262,7 +274,7 @@ export const architecture: Pass = Object.freeze({
         if (rules.length === 0 && !own) {
             return {};
         }
-        const run = cruised(context, rules);
+        const run = cruised(context, rules, members);
 
         return {
             ...(run.problem === null ? {} : { failed: true, lines: [run.problem] }),

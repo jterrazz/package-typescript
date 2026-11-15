@@ -1,0 +1,32 @@
+description: records a member's crossing in the member's own ratchet, and the run it records is green
+fixture: ./__fixtures__/architecture-map/members/
+env: TYPESCRIPT_CHECK_PASSES=architecture
+runs:
+    - command: baseline
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Recording the baseline...
+
+          .studio/baseline.json › typescript written: 0 finding(s) across 0 rule(s)
+          apps/web
+          .studio/baseline.json › typescript written: 1 finding(s) across 1 rule(s)
+      files:
+          apps/web/.studio/baseline.json:
+              equals: |
+                  {
+                      "typescript": {
+                          "architecture/hexagonal-domain-is-pure": 1
+                      }
+                  }
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Architecture (layer map)
+
+          ✓ Passed ({{duration}})
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

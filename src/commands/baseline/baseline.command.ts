@@ -21,8 +21,9 @@ import {
     suppressionsRecorded,
     withTsgolintOnPath,
 } from '../../drivers/oxlint/oxlint.js';
+import { cruisesArchitecture } from '../check/passes/checker-passes.js';
 import { holdsContentOnly } from '../check/passes/content.js';
-import { verbatimHere } from '../check/passes/setup.js';
+import { membersOf, verbatimHere } from '../check/passes/setup.js';
 import { badge, print } from '../terminal.js';
 
 async function listedTargets(ignoresOf: string | undefined): Promise<null | string[]> {
@@ -45,10 +46,15 @@ async function recordLinter(): Promise<void> {
     removeWhenEmpty('.');
 }
 
-async function recordPass(pass: string, report: string, args: readonly string[]): Promise<void> {
+async function recordPass(
+    pass: string,
+    report: string,
+    args: readonly string[],
+    unit = '.',
+): Promise<void> {
     await checker(
         pass,
-        ['.', '--format', 'json', ...args],
+        [unit, '--format', 'json', ...args],
         { path: report },
         { stderr: 'ignore', typeless: true },
     );
@@ -63,6 +69,27 @@ async function written(reports: Reports): Promise<number> {
         'inherit',
         { stderr: 'inherit' },
     );
+}
+
+// invariant: a member's architecture is judged by its own run against its own `.studio/baseline.json`, so its debt is recorded there; the names pass runs at the root alone.
+async function recordedMembers(scratch: string): Promise<number> {
+    const members = membersOf().filter((member) => cruisesArchitecture(member));
+    for (const [index, member] of members.entries()) {
+        const report = join(scratch, `architecture-${String(index)}.json`);
+        await recordPass('architecture', report, ['--depcruise', depcruiseBinary()], member);
+        print(`${member}\n`);
+        const status = await checker(
+            'baseline',
+            [member, '--architecture', report, '--write'],
+            'inherit',
+            { stderr: 'inherit' },
+        );
+        if (status !== 0) {
+            return status;
+        }
+    }
+
+    return 0;
 }
 
 async function debtHoldingCheckersOf(unit: string): Promise<PresetChecker[]> {
@@ -107,7 +134,11 @@ export async function baseline(): Promise<number> {
                     depcruiseBinary(),
                 ]);
                 await recordPass('names', reports.names, ['--ls-lint', lsLintBinary()]);
-                if ((await written(reports)) !== 0 || (await recordedPresets()) !== 0) {
+                if (
+                    (await written(reports)) !== 0 ||
+                    (await recordedMembers(scratch)) !== 0 ||
+                    (await recordedPresets()) !== 0
+                ) {
                     return 1;
                 }
                 await filesFormatted(
