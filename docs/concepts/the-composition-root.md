@@ -40,7 +40,7 @@ When it grows past one file, it splits by layer (`platform.ts`, `outbound.ts`, `
 
 ## Two callers, and no other
 
-The app's entry and the spec runners are the only modules that import `composition/`. A process entry builds the app with `await using app = compose()`, starts it, and leaving that scope runs the ordered stop. A runner builds it with what the spec stands on, `compose(testConfig, { agents, database })`, hands the specification the part it drives ([`@jterrazz/test` § API specs](https://github.com/jterrazz/package-test/blob/main/docs/guides/api-specs.md#the-constructor)), and disposes the app in its `afterAll`, before the specification's `cleanup`: no runner leaves the graph's connections open behind it.
+The app's entry and the spec runners are the only modules of the app that import `composition/`; a module's own test under `__tests__/` may too, as it may build a fake adapter, since it stands outside the app like a spec. A process entry builds the app with `await using app = compose()`, starts it, and leaving that scope runs the ordered stop. A runner builds it with what the spec stands on, `compose(testConfig, { agents, database })`, hands the specification the part it drives ([`@jterrazz/test` § API specs](https://github.com/jterrazz/package-test/blob/main/docs/guides/api-specs.md#the-constructor)), and disposes the app in its `afterAll`, before the specification's `cleanup`: no runner leaves the graph's connections open behind it.
 
 A UI app has no process to enter: its entry is the module its framework renders first, an Expo app's root layout `app/_layout.tsx` for one. That module composes the app once and hands the graph down through one provider at the top of the tree; a hook or a component reads what it needs from that provider, never from `composition/`. Which module is the entry follows the platform `studio.config.ts` declares; the list is [the hexagonal map](../reference/quality-checks.md#the-hexagonal-map)'s.
 
@@ -73,5 +73,7 @@ An override is a typed member of `Partial<Ports>`: a runner names the port it re
 
 Two boundaries of the hexagonal map keep the root a root:
 
-- `hexagonal-composition-wires-infrastructure`: no layer but `composition/` imports `infrastructure/` (an adapter importing its own layer aside, the specs aside: they stand outside the app and may build an adapter of their own).
-- `hexagonal-composition-is-the-root`: nothing imports `composition/` but the app's entry and a `specs/**/*.specification.ts` runner. A module that reached it would depend on the whole graph, and a cycle through the root would be one import away.
+- `hexagonal-composition-wires-infrastructure`: no layer but `composition/` imports `infrastructure/` (an adapter importing its own layer aside, the specs and the module tests aside: they stand outside the app and may build an adapter of their own).
+- `hexagonal-composition-is-the-root`: nothing imports `composition/` but the app's entry, a `specs/**/*.specification.ts` runner and a module test. A module that reached it would depend on the whole graph, and a cycle through the root would be one import away.
+
+Every boundary of the map spares a module test, a file under `__tests__/` at any depth: what proves a boundary is the module's own import, never its test's ([ADR-042](../decisions/042-the-layer-map-is-judged-per-unit-spares-module-tests-and-shares-through-the-kit.md)).

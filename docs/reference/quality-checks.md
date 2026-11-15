@@ -600,6 +600,8 @@ A package that ships layers for its consumers hands them in its preset, and a pr
 - `presentation/ui/atoms/` and `molecules/` stay clear of navigation.
 - `presentation/features/<feature>/` reaches no other feature, except `features/common/`.
 
+No boundary reads a module test as an importer: a file under `__tests__/`, at any depth, may wire a fake adapter or the composition root to test its module. A layer a project declares itself spares what its own `from` spares.
+
 Why the two `composition/` boundaries hold, and how the entry and a runner build the app through it, are [The composition root](../concepts/the-composition-root.md)'s. Each folder matches at any depth of the unit, and a workspace member laid out as a hexagonal application is held to the map by its own run, from the root. The eight are `hexagonalRules(platform)` in `lint/consumer/checks/architecture.hexagonal.ts`, each with its why and its fix, the entries by platform its `COMPOSITION_ENTRIES`.
 
 ### What the pass needs from the tree

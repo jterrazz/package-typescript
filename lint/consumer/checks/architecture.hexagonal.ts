@@ -1,4 +1,6 @@
+import { TESTS_FOLDER } from '../../kit/project/ground.js';
 import { laidOutHexagonally } from '../../kit/project/hexagonal-layout.js';
+import { pathsOf } from '../../kit/project/inert-laws.js';
 import type { ArchitectureRule } from '../../kit/project/preset.js';
 import type { Platform } from '../../kit/project/project-kind.js';
 
@@ -100,11 +102,21 @@ const ARCHITECTURE_HEXAGONAL: readonly ArchitectureRule[] = Object.freeze([
     },
 ]);
 
+// invariant: a module's test builds the module the way the composition root would, a fake adapter or the root itself included, so no boundary of the map reads it as an importer.
+const MODULE_TEST = `${ANY_DEPTH}${TESTS_FOLDER}/`;
+
+const sparingModuleTests = (rule: ArchitectureRule): ArchitectureRule => ({
+    ...rule,
+    from: { ...rule.from, pathNot: [...pathsOf(rule.from.pathNot), MODULE_TEST] },
+});
+
 /** The hexagonal map, its composition root entered where the declared platform enters an app (`src/index` when none is declared). */
 export function hexagonalRules(platform: null | Platform): readonly ArchitectureRule[] {
     const pathNot = [`${ANY_DEPTH}composition/`, ...compositionEntriesOf(platform), SPEC_RUNNER];
 
-    return [...ARCHITECTURE_HEXAGONAL, { ...COMPOSITION_IS_THE_ROOT, from: { pathNot } }];
+    return [...ARCHITECTURE_HEXAGONAL, { ...COMPOSITION_IS_THE_ROOT, from: { pathNot } }].map(
+        (rule) => sparingModuleTests(rule),
+    );
 }
 
 /** The paths of the modules a platform enters the app by, at any depth (`src/index` when none is declared). */
