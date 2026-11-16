@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
+import { pathsOf } from '../../../kit/project/inert-laws.js';
 import { PLATFORMS } from '../../../kit/project/project-kind.js';
 import type { Platform } from '../../../kit/project/project-kind.js';
 import { compositionEntriesOf, hexagonalRules } from '../architecture.hexagonal.js';
@@ -43,6 +44,23 @@ describe('architecture.hexagonal', () => {
         // Given - a project that declares no platform
         // Then - it is entered as a process is
         expect(entriesOf(null)).toStrictEqual(['src/index.ts']);
+    });
+
+    test('hexagonalRules — the kit reaches no feature, and the rule teaches where the feature keeps what it takes', () => {
+        // Given - the kit rule of the map
+        const kit = hexagonalRules('node').find(({ name }) => name === 'hexagonal-kit-knows-no-feature');
+        const matches = (side: unknown, path: string): boolean =>
+            pathsOf(side).some((pattern) => new RegExp(pattern, 'u').test(path));
+
+        // Then - it judges a module of the kit importing a module of a feature, and nothing else
+        expect(kit?.fix).toBe(
+            'take what the feature knows as an argument, or move the brick into the feature',
+        );
+        expect(matches(kit?.from.path, 'src/presentation/kit/stamp.ts')).toBe(true);
+        expect(matches(kit?.from.path, 'src/presentation/features/a/card.ts')).toBe(false);
+        expect(matches(kit?.to.path, 'src/presentation/features/a/card.ts')).toBe(true);
+        expect(matches(kit?.to.path, 'src/presentation/kit/stamp.ts')).toBe(false);
+        expect(kit?.read).toBe('docs/reference/quality-checks.md#the-hexagonal-map');
     });
 
     test('every rule of the map says why it holds, in the words its finding prints', () => {
