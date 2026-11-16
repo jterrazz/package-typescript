@@ -91,6 +91,52 @@ describe('architecture', () => {
         });
     });
 
+    test('leaves each workspace member to its own run: its files are not cruised, and a layer whose folder is a member judges nothing', async () => {
+        // Given - a workspace root holding two members and sources of its own, and a layer opening on a member
+        const held = {
+            'apps/site/package.json': '{}',
+            'package.json': JSON.stringify({ workspaces: ['web', 'apps/*'] }),
+            'web/package.json': '{}',
+        };
+        const files = ['src/a.ts', 'web/b.ts', 'apps/site/c.ts', 'lib/d.ts'];
+        const cruising = await cruised({ files, held });
+        const memberLayer = await cruised({
+            files,
+            held,
+            layers: [{ ...LAYER, from: { path: '^web/' } }],
+        });
+        const ownLayer = await cruised({
+            files,
+            held: { ...held, 'src/a.ts': '' },
+            layers: [{ ...LAYER, from: { path: '^src/' } }],
+        });
+
+        // Then - the folders of the root's own sources are cruised, and the members are left out of the cruise
+        expect(cruising.args.slice(6)).toStrictEqual(['lib', 'src']);
+        expect(cruising.config).toMatchObject({
+            options: { exclude: { path: `${UNCRUISED_PATHS}|^(apps/site|web)/` } },
+        });
+        // Then - a layer of a member's folder is the member's own, so no cruise runs for it; a layer of a folder the root holds does
+        expect(memberLayer.args).toStrictEqual([]);
+        expect(memberLayer.result).toStrictEqual({});
+        expect(ownLayer.args.slice(6)).toStrictEqual(['lib', 'src']);
+    });
+
+    test('judges nothing of a workspace root whose code all sits in its members, and refuses no map for it', async () => {
+        // Given - a root whose only sources are a member's
+        const run = await cruised({
+            files: ['web/b.ts'],
+            held: {
+                'package.json': JSON.stringify({ workspaces: ['web'] }),
+                'web/package.json': '{}',
+            },
+        });
+
+        // Then - nothing is cruised and nothing fails
+        expect(run.args).toStrictEqual([]);
+        expect(run.result).toStrictEqual({ findings: [] });
+    });
+
     test('runs nothing for a project that declares no layer and holds no config of its own', async () => {
         // Given - no layer and no config
         const run = await cruised({ layers: [] });
