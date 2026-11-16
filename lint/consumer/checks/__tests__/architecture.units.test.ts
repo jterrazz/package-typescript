@@ -20,12 +20,12 @@ describe('architecture.units', () => {
 
     test('uncruisedOf — a member name is matched literally, whatever character it holds', () => {
         // Given - a member whose name holds every character a pattern reads as syntax
-        const member = 'a.b+c(d)[e]{f}|g^h$i*j?k\\l';
+        const member = String.raw`a.b+c(d)[e]{f}|g^h$i*j?k\l`;
         const pattern = new RegExp(uncruisedOf([member]), 'u');
 
         // Then - only that folder is left out, and a lookalike is not
         expect(pattern.test(`${member}/src/a.ts`)).toBe(true);
-        expect(pattern.test('axb+c(d)[e]{f}|g^h$i*j?k\\l/src/a.ts')).toBe(false);
+        expect(pattern.test(String.raw`axb+c(d)[e]{f}|g^h$i*j?k\l/src/a.ts`)).toBe(false);
         expect(pattern.test(`${member}x/src/a.ts`)).toBe(false);
     });
 });
