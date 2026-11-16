@@ -142,13 +142,17 @@ export function architecturePasses(check: Check): Launched[] {
     if (!check.selected('architecture')) {
         return [];
     }
+    // Stryker disable next-line StringLiteral: the checker resolves an empty root to the working directory, which '.' names
     const units = ['.', ...check.members].filter((unit) => cruisesArchitecture(unit));
 
     return units.map((unit, index) => {
         const log = check.logs.at(`architecture-${String(index)}.log`);
-        const args = [unit, '--depcruise', check.tools.depcruise, ...(check.fix ? ['--fix'] : [])];
+        const args = [unit, '--depcruise', check.tools.depcruise];
 
-        return { log, status: checker('architecture', args, { path: log }, { typeless: true }) };
+        return {
+            log,
+            status: checker('architecture', check.fix ? [...args, '--fix'] : args, { path: log }),
+        };
     });
 }
 

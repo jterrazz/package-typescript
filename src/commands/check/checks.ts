@@ -139,6 +139,7 @@ async function reported(
         );
     const contributed = await presetVerdicts(run, presets);
     const publish = await publishVerdict(run, passes.publish);
+    // Stryker disable next-line StringLiteral: the name only keeps the joined log apart from the others in the run's scratch folder, which no reader outside the run opens
     const architecture = await unitsVerdict(run, 'architecture', passes.architecture);
     const { fix, selected } = run;
 
