@@ -50,14 +50,10 @@ async function recordPass(
     pass: string,
     report: string,
     args: readonly string[],
+    // Stryker disable next-line StringLiteral: the checker resolves an empty root to the working directory, which '.' names
     unit = '.',
 ): Promise<void> {
-    await checker(
-        pass,
-        [unit, '--format', 'json', ...args],
-        { path: report },
-        { stderr: 'ignore', typeless: true },
-    );
+    await checker(pass, [unit, '--format=json', ...args], { path: report }, { stderr: 'ignore' });
 }
 
 type Reports = { architecture: string; names: string };
@@ -82,7 +78,6 @@ async function recordedMembers(scratch: string): Promise<number> {
             'baseline',
             [member, '--architecture', report, '--write'],
             'inherit',
-            { stderr: 'inherit' },
         );
         if (status !== 0) {
             return status;

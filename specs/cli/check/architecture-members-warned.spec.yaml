@@ -1,0 +1,22 @@
+description: records a member's crossing whole when the settings file writes to stderr as it loads
+fixture: ./__fixtures__/architecture-map/members-warned/
+env: TYPESCRIPT_CHECK_PASSES=architecture
+runs:
+    - command: baseline
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Recording the baseline...
+
+          .studio/baseline.json › typescript written: 0 finding(s) across 0 rule(s)
+          apps/web
+          .studio/baseline.json › typescript written: 1 finding(s) across 1 rule(s)
+      stderr: |
+          settings read
+      files:
+          apps/web/.studio/baseline.json:
+              equals: |
+                  {
+                      "typescript": {
+                          "architecture/hexagonal-domain-is-pure": 1
+                      }
+                  }
