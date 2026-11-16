@@ -6,6 +6,8 @@ import {
     existsSync,
     mkdirSync,
     mkdtempSync,
+    readFileSync,
+    realpathSync,
     rmSync,
     symlinkSync,
     writeFileSync,
@@ -19,6 +21,8 @@ const root = mkdtempSync(join(tmpdir(), 'hoisted-baseline-'));
 const member = join(root, 'packages/api');
 const installed = join(root, 'node_modules/@jterrazz/typescript');
 const called = join(root, 'oxlint-called');
+const cruised = join(root, 'depcruise-cruised');
+const NO_TOOL_ON_PATH = { ...process.env, PATH: '/usr/bin:/bin' };
 
 function stub(path: string, body: string): void {
     writeFileSync(path, `#!/bin/sh\n${body}\n`);
@@ -31,9 +35,13 @@ cpSync(PACKED, installed, {
     recursive: true,
 });
 mkdirSync(join(root, 'node_modules/.bin'), { recursive: true });
-for (const tool of ['depcruise', 'ls-lint', 'oxfmt']) {
+for (const tool of ['ls-lint', 'oxfmt']) {
     stub(join(root, 'node_modules/.bin', tool), 'echo "{}"');
 }
+stub(
+    join(root, 'node_modules/.bin/depcruise'),
+    `for argument in "$@"; do [ "$previous" = --output-to ] && echo "{}" > "$argument"; previous="$argument"; done\npwd -P >> ${cruised}`,
+);
 stub(
     join(root, 'node_modules/.bin/oxlint'),
     `echo "called" >> ${called}\necho '{ "diagnostics": [] }'`,
@@ -54,7 +62,25 @@ writeFileSync(
 );
 writeFileSync(
     join(member, 'studio.config.ts'),
-    "export default { kind: 'api', platform: 'node' };\n",
+    `export default {
+    kind: 'api',
+    platform: 'node',
+    typescript: {
+        architecture: {
+            layers: [
+                {
+                    name: 'domain-reaches-no-store',
+                    from: { path: 'domain/' },
+                    to: { path: 'infrastructure/' },
+                    why: 'the member keeps its domain away from its stores',
+                    fix: 'reach the store through the composition root',
+                    read: 'docs/concepts/architecture.md#layers',
+                },
+            ],
+        },
+    },
+};
+`,
 );
 writeFileSync(
     join(member, 'oxlint.config.ts'),
@@ -67,12 +93,29 @@ writeFileSync(
 mkdirSync(join(member, 'src'));
 writeFileSync(join(member, 'src/index.ts'), 'export const api = 1;\n');
 
-spawnSync(process.execPath, [join(installed, 'dist/typescript.js'), 'baseline'], {
-    cwd: member,
-    env: { ...process.env, PATH: '/usr/bin:/bin' },
-    stdio: 'ignore',
-});
+function ran(command: string, cwd: string): void {
+    spawnSync(process.execPath, [join(installed, 'dist/typescript.js'), command], {
+        cwd,
+        env: NO_TOOL_ON_PATH,
+        stdio: 'ignore',
+    });
+}
+
+function cruisedTheMember(command: string): string {
+    rmSync(cruised, { force: true });
+    ran(command, root);
+    const folders = existsSync(cruised) ? readFileSync(cruised, 'utf8').split('\n') : [];
+
+    return folders.includes(realpathSync(member)) ? 'yes' : 'no';
+}
+
+ran('baseline', member);
 process.stdout.write(
     `oxlint resolved beside the workspace root: ${existsSync(called) ? 'yes' : 'no'}\n`,
 );
+for (const command of ['baseline', 'check']) {
+    process.stdout.write(
+        `dependency-cruiser resolved beside the workspace root for a member's ${command}: ${cruisedTheMember(command)}\n`,
+    );
+}
 rmSync(root, { force: true, recursive: true });
