@@ -144,10 +144,8 @@ export function architecturePasses(check: Check): Launched[] {
     }
     const units = ['.', ...check.members].filter((unit) => cruisesArchitecture(unit));
 
-    return units.map((unit) => {
-        const log = check.logs.at(
-            `architecture-${unit === '.' ? 'root' : unit.replaceAll('/', '-')}.log`,
-        );
+    return units.map((unit, index) => {
+        const log = check.logs.at(`architecture-${String(index)}.log`);
         const args = [unit, '--depcruise', check.tools.depcruise, ...(check.fix ? ['--fix'] : [])];
 
         return { log, status: checker('architecture', args, { path: log }, { typeless: true }) };

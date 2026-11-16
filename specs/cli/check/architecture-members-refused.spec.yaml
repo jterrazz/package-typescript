@@ -1,0 +1,23 @@
+description: stops recording at the member whose architecture pass wrote no report, and fails the run
+fixture: ./__fixtures__/architecture-map/members-refused/
+env: TYPESCRIPT_CHECK_PASSES=architecture
+runs:
+    - command: baseline
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  Recording the baseline...
+
+          .studio/baseline.json › typescript written: 0 finding(s) across 0 rule(s)
+          apps/api
+          .studio/baseline.json › typescript written: 1 finding(s) across 1 rule(s)
+          apps/web
+          found: the Architecture (layer map) pass wrote no report, so the typescript section is left as it was · why: a section written without that pass's counts would erase its debt rather than record it · fix: run 'typescript check', which prints why the pass could not judge the tree, correct that, then run 'typescript baseline' again · read: docs/reference/quality-checks.md#recording-it
+      files:
+          apps/api/.studio/baseline.json:
+              equals: |
+                  {
+                      "typescript": {
+                          "architecture/hexagonal-domain-is-pure": 1
+                      }
+                  }
+          apps/web/.studio/baseline.json: absent

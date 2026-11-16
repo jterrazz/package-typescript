@@ -1,0 +1,7 @@
+{
+    "name": "fixture-architecture-map-members",
+    "private": true,
+    "workspaces": [
+        "apps/*"
+    ]
+}
