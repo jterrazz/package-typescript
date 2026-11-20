@@ -4,8 +4,10 @@ import { describe, expect, test } from 'vitest';
 import {
     GO_TEST_FILE,
     GROUND_GLOB,
+    GROUND_IGNORES,
     isSpecialFolder,
     isSpecialFolderName,
+    isTargetGround,
     moduleStemOfTest,
     moduleTestOf,
     RENAMED_FOLDERS,
@@ -140,6 +142,46 @@ describe('ground', () => {
             false,
             false,
             false,
+        ]);
+    });
+
+    test('isTargetGround — a ground folder directly in a folder of tests/ or Tests/, and no other place', () => {
+        // Given - a target's ground in each spelling and deep in a unit, then the places that only resemble it
+        const places = [
+            'tests/station-kit-tests/__expected__/',
+            'Tests/StationKit/__fixtures__',
+            'machines/apps/menubar/tests/station-kit-tests/__seeds__/',
+            'tests/__expected__/',
+            'tests/target/deeper/__expected__/',
+            'src/target/__expected__/',
+            'tests/target/__setup__/',
+            'tests/target/',
+            '',
+        ];
+
+        // Then - only the first three
+        expect(places.map((place) => isTargetGround(place))).toStrictEqual([
+            true,
+            true,
+            true,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+        ]);
+    });
+
+    test('groundIgnores — each ground folder escapes a specs tree, a module tests folder and a test target of either spelling', () => {
+        // Given - the ignores of one ground folder
+        const ignored = GROUND_IGNORES.filter((pattern) => pattern.endsWith('/__seeds__'));
+
+        // Then - the three places
+        expect(ignored).toStrictEqual([
+            '**/specs/**/__seeds__',
+            '**/__tests__/**/__seeds__',
+            '**/{tests,Tests}/*/__seeds__',
         ]);
     });
 

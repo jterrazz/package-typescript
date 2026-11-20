@@ -8,7 +8,7 @@ import type { Finding } from '../../kit/checker/pass.js';
 import { runTool } from '../../kit/checker/tool-run.js';
 import {
     CODE_SPECIAL_FOLDERS,
-    GROUND_FOLDERS,
+    GROUND_IGNORES,
     SPECIAL_FOLDERS,
     TESTS_FOLDER,
 } from '../../kit/project/ground.js';
@@ -37,17 +37,7 @@ const CODE_ROOTS = ['apps', 'bin', 'lib', 'packages', 'src', 'tests'];
 
 const ANY_NAME: Rules = Object.freeze({});
 
-const IGNORED = [
-    'node_modules',
-    '**/node_modules',
-    'dist',
-    '**/.*',
-    // invariant: the ground a test stands on is its own, under a specs tree or in a module's tests folder; anywhere else it is a folder like any.
-    ...GROUND_FOLDERS.flatMap((folder) => [
-        `**/specs/**/${folder}`,
-        `**/${TESTS_FOLDER}/**/${folder}`,
-    ]),
-];
+const IGNORED = ['node_modules', '**/node_modules', 'dist', '**/.*', ...GROUND_IGNORES];
 
 const MODULE_EXTENSIONS = ['.cjs', '.cts', '.js', '.jsx', '.mjs', '.mts', '.ts', '.tsx'];
 
