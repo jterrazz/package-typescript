@@ -63,6 +63,25 @@ export const RETIRED_SHARED_FOLDERS: readonly string[] = Object.freeze(['_shared
 
 export const isGroundFolder = (name: string): boolean => GROUND_FOLDERS.includes(name);
 
+/** The folders a SwiftPM package keeps its test targets in, one folder a target: `tests/` by the house's spelling, `Tests/` by SwiftPM's default layout. */
+export const TEST_TARGET_ROOTS: readonly string[] = Object.freeze(['tests', 'Tests']);
+
+/** Whether a path, its folders joined by `/` with the ground last, is a ground folder directly in a test target: `tests/<target>/__expected__`. */
+export function isTargetGround(path: string): boolean {
+    const [ground = '', target = '', root = ''] = path.split('/').filter(Boolean).toReversed();
+
+    return isGroundFolder(ground) && target !== '' && TEST_TARGET_ROOTS.includes(root);
+}
+
+// invariant: the ground a test stands on is its own, under a specs tree, in a module's tests folder or directly in a SwiftPM test target; anywhere else it is a folder like any.
+export const GROUND_IGNORES: readonly string[] = Object.freeze(
+    GROUND_FOLDERS.flatMap((folder) => [
+        `**/specs/**/${folder}`,
+        `**/${TESTS_FOLDER}/**/${folder}`,
+        `**/{${TEST_TARGET_ROOTS.join(',')}}/*/${folder}`,
+    ]),
+);
+
 export const isSpecialFolder = (name: string): boolean => SPECIAL_FOLDERS.includes(name);
 
 const TEST_SUFFIX = /\.(?:test|test-d)\.[cm]?[jt]sx?$/u;

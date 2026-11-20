@@ -207,6 +207,18 @@ describe('placementFindingOf', () => {
             },
         ],
         ['src/File.ts', false, undefined],
+        ['tests/station-kit-tests/__expected__', true, undefined],
+        ['packages/a/Tests/StationKit/__fixtures__', true, undefined],
+        [
+            'tests/__expected__',
+            true,
+            {
+                message:
+                    'found: `tests/__expected__/` is the ground of a test outside every `__tests__/` · why: a `__<word>__/` folder is one the toolchain gives a meaning to: in a code root the special folders are `__tests__/`, and every other folder is named for what it holds · fix: move it into the `__tests__/` of its folder, beside the module tests that read it · read: docs/reference/quality-checks.md#the-names-tree-pass',
+                path: 'tests/__expected__/',
+                rule: 'names/directory-in-kebab-case',
+            },
+        ],
         [
             'packages/a/lint/self/reading',
             true,

@@ -3,6 +3,7 @@ import {
     CODE_SPECIAL_FOLDERS,
     isGroundFolder,
     isSpecialFolderName,
+    isTargetGround,
     SPECIAL_FOLDERS,
     TESTS_FOLDER,
 } from '../../kit/project/ground.js';
@@ -128,8 +129,11 @@ function specialFolderFinding(path: string, name: string): Finding {
     };
 }
 
-function directoryFinding(path: string): Finding {
+function directoryFinding(path: string): Finding | undefined {
     const name = path.split('/').at(-2) ?? '';
+    if (isTargetGround(path)) {
+        return undefined;
+    }
     if (isSpecialFolderName(name)) {
         return specialFolderFinding(path, name);
     }
