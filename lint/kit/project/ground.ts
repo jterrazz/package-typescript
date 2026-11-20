@@ -68,9 +68,14 @@ export const TEST_TARGET_ROOTS: readonly string[] = Object.freeze(['tests', 'Tes
 
 /** Whether a path, its folders joined by `/` with the ground last, is a ground folder directly in a test target: `tests/<target>/__expected__`. */
 export function isTargetGround(path: string): boolean {
-    const [ground = '', target = '', root = ''] = path.split('/').filter(Boolean).toReversed();
+    const [ground, , root] = path.split('/').filter(Boolean).toReversed();
 
-    return isGroundFolder(ground) && target !== '' && TEST_TARGET_ROOTS.includes(root);
+    return (
+        ground !== undefined &&
+        root !== undefined &&
+        isGroundFolder(ground) &&
+        TEST_TARGET_ROOTS.includes(root)
+    );
 }
 
 // invariant: the ground a test stands on is its own, under a specs tree, in a module's tests folder or directly in a SwiftPM test target; anywhere else it is a folder like any.

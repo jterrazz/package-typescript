@@ -157,9 +157,14 @@ describe('ground', () => {
             'tests/target/__setup__/',
             'tests/target/',
             '',
+            'Tests/StationKit/__requests__',
+            'tests/target/__seeds__',
+            'mytests/target/__expected__',
+            '__expected__',
+            'target/__expected__',
         ];
 
-        // Then - only the first three
+        // Then - the first three and the two ground folders added after the look-alikes
         expect(places.map((place) => isTargetGround(place))).toStrictEqual([
             true,
             true,
@@ -167,6 +172,11 @@ describe('ground', () => {
             false,
             false,
             false,
+            false,
+            false,
+            false,
+            true,
+            true,
             false,
             false,
             false,
